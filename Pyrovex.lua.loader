@@ -2,7 +2,7 @@
 --==================================================
 -- PYROVEX HUB - TOP LOADING EFFECT
 -- BLUE x RED x BLACK x PURPLE
--- 5 SECONDS | SMOOTH ANIMATIONS
+-- 5 SECONDS | ORIGINAL LOADING EFFECT
 --==================================================
 
 local Players = game:GetService("Players")
@@ -11,13 +11,9 @@ local TweenService = game:GetService("TweenService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- REMOVE OLD LOADER
 local Old = PlayerGui:FindFirstChild("PyrovexTopLoader")
-if Old then
-    Old:Destroy()
-end
+if Old then Old:Destroy() end
 
--- SCREEN GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PyrovexTopLoader"
 ScreenGui.IgnoreGuiInset = true
@@ -25,128 +21,103 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.DisplayOrder = 999999
 ScreenGui.Parent = PlayerGui
 
--- MAIN FRAME
 local Main = Instance.new("Frame")
 Main.Name = "LoadingContainer"
-Main.Size = UDim2.new(0, 310, 0, 48)
-Main.Position = UDim2.new(0.5, 0, 0, -60)
-Main.AnchorPoint = Vector2.new(0.5, 0)
-Main.BackgroundColor3 = Color3.fromRGB(12, 12, 22)
+Main.Size = UDim2.new(0,310,0,48)
+Main.Position = UDim2.new(0.5,0,0,-60)
+Main.AnchorPoint = Vector2.new(0.5,0)
+Main.BackgroundColor3 = Color3.fromRGB(12,12,22)
 Main.BorderSizePixel = 0
 Main.Parent = ScreenGui
 
 local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 10)
+Corner.CornerRadius = UDim.new(0,10)
 Corner.Parent = Main
 
 local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.fromRGB(75, 65, 150)
+Stroke.Color = Color3.fromRGB(75,65,150)
 Stroke.Thickness = 1
 Stroke.Transparency = 0.15
 Stroke.Parent = Main
 
--- SETTINGS EMOJI
 local Settings = Instance.new("TextLabel")
-Settings.Size = UDim2.new(0, 27, 0, 27)
-Settings.Position = UDim2.new(0, 10, 0, 5)
+Settings.Size = UDim2.new(0,27,0,27)
+Settings.Position = UDim2.new(0,10,0,5)
 Settings.BackgroundTransparency = 1
 Settings.Text = "⚙️"
 Settings.TextSize = 21
 Settings.Font = Enum.Font.GothamBold
 Settings.Parent = Main
 
--- ROTATION ANIMATION
 task.spawn(function()
     while Settings.Parent do
         local Rotate = TweenService:Create(
             Settings,
-            TweenInfo.new(
-                1.5,
-                Enum.EasingStyle.Linear,
-                Enum.EasingDirection.InOut
-            ),
+            TweenInfo.new(1.5,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut),
             {Rotation = Settings.Rotation + 360}
         )
-
         Rotate:Play()
         Rotate.Completed:Wait()
     end
 end)
 
--- STATUS TEXT
 local Status = Instance.new("TextLabel")
-Status.Size = UDim2.new(1, -52, 0, 19)
-Status.Position = UDim2.new(0, 45, 0, 5)
+Status.Size = UDim2.new(1,-52,0,19)
+Status.Position = UDim2.new(0,45,0,5)
 Status.BackgroundTransparency = 1
 Status.Text = "Waiting for game to load..."
-Status.TextColor3 = Color3.fromRGB(235, 235, 255)
+Status.TextColor3 = Color3.fromRGB(235,235,255)
 Status.TextSize = 11
 Status.Font = Enum.Font.GothamSemibold
 Status.TextXAlignment = Enum.TextXAlignment.Left
 Status.Parent = Main
 
--- PROGRESS BACKGROUND
 local BarBG = Instance.new("Frame")
-BarBG.Size = UDim2.new(1, -55, 0, 5)
-BarBG.Position = UDim2.new(0, 45, 0, 29)
-BarBG.BackgroundColor3 = Color3.fromRGB(35, 30, 50)
+BarBG.Size = UDim2.new(1,-55,0,5)
+BarBG.Position = UDim2.new(0,45,0,29)
+BarBG.BackgroundColor3 = Color3.fromRGB(35,30,50)
 BarBG.BorderSizePixel = 0
 BarBG.ClipsDescendants = true
 BarBG.Parent = Main
 
 local BarCorner = Instance.new("UICorner")
-BarCorner.CornerRadius = UDim.new(1, 0)
+BarCorner.CornerRadius = UDim.new(1,0)
 BarCorner.Parent = BarBG
 
--- PROGRESS BAR
 local Bar = Instance.new("Frame")
-Bar.Size = UDim2.new(0, 0, 1, 0)
-Bar.BackgroundColor3 = Color3.fromRGB(40, 130, 255)
+Bar.Size = UDim2.new(0,0,1,0)
+Bar.BackgroundColor3 = Color3.fromRGB(40,130,255)
 Bar.BorderSizePixel = 0
 Bar.Parent = BarBG
 
 local BarCorner2 = Instance.new("UICorner")
-BarCorner2.CornerRadius = UDim.new(1, 0)
+BarCorner2.CornerRadius = UDim.new(1,0)
 BarCorner2.Parent = Bar
 
--- BLUE x PURPLE x RED GRADIENT
 local Gradient = Instance.new("UIGradient")
 Gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 140, 255)),
-    ColorSequenceKeypoint.new(0.45, Color3.fromRGB(100, 65, 255)),
-    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(170, 45, 150)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 55, 65))
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(0,140,255)),
+    ColorSequenceKeypoint.new(0.45,Color3.fromRGB(100,65,255)),
+    ColorSequenceKeypoint.new(0.75,Color3.fromRGB(170,45,150)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(255,55,65))
 })
 Gradient.Parent = Bar
 
--- ANIMATION IN
 TweenService:Create(
     Main,
-    TweenInfo.new(
-        0.65,
-        Enum.EasingStyle.Quint,
-        Enum.EasingDirection.Out
-    ),
-    {
-        Position = UDim2.new(0.5, 0, 0, 12)
-    }
+    TweenInfo.new(0.65,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),
+    {Position = UDim2.new(0.5,0,0,12)}
 ):Play()
 
--- LOADING SEQUENCE
 task.spawn(function()
-
-    -- WAITING TEXT (2 SECONDS)
     task.wait(2)
-
     if not ScreenGui.Parent then return end
 
-    -- SMOOTH TEXT CHANGE
     local FadeOut = TweenService:Create(
         Status,
         TweenInfo.new(0.2),
         {TextTransparency = 1}
     )
-
     FadeOut:Play()
     FadeOut.Completed:Wait()
 
@@ -157,70 +128,38 @@ task.spawn(function()
         TweenInfo.new(0.3),
         {TextTransparency = 0}
     ):Play()
-
 end)
 
--- 5 SECOND PROGRESS
 local Progress = TweenService:Create(
     Bar,
-    TweenInfo.new(
-        5,
-        Enum.EasingStyle.Linear,
-        Enum.EasingDirection.Out
-    ),
-    {
-        Size = UDim2.new(1, 0, 1, 0)
-    }
+    TweenInfo.new(5,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),
+    {Size = UDim2.new(1,0,1,0)}
 )
 
 Progress:Play()
 Progress.Completed:Wait()
 
--- ANIMATION OUT
 local Exit = TweenService:Create(
     Main,
-    TweenInfo.new(
-        0.6,
-        Enum.EasingStyle.Quint,
-        Enum.EasingDirection.In
-    ),
+    TweenInfo.new(0.6,Enum.EasingStyle.Quint,Enum.EasingDirection.In),
     {
-        Position = UDim2.new(0.5, 0, 0, -60),
+        Position = UDim2.new(0.5,0,0,-60),
         BackgroundTransparency = 1
     }
 )
 
-TweenService:Create(
-    Settings,
-    TweenInfo.new(0.3),
-    {TextTransparency = 1}
-):Play()
-
-TweenService:Create(
-    Status,
-    TweenInfo.new(0.3),
-    {TextTransparency = 1}
-):Play()
-
-TweenService:Create(
-    BarBG,
-    TweenInfo.new(0.3),
-    {BackgroundTransparency = 1}
-):Play()
+TweenService:Create(Settings,TweenInfo.new(0.3),{TextTransparency = 1}):Play()
+TweenService:Create(Status,TweenInfo.new(0.3),{TextTransparency = 1}):Play()
+TweenService:Create(BarBG,TweenInfo.new(0.3),{BackgroundTransparency = 1}):Play()
 
 Exit:Play()
 Exit.Completed:Wait()
-
 ScreenGui:Destroy()
 
 --==================================================
--- PYROVEX HUB LOADING COMPLETE
---==================================================
-
---==================================================
 -- PYROVEX LOADER V10
--- PYROVEX HUB COMMUNITY
--- PREMIUM BLUE x PURPLE REDESIGN
+-- PREMIUM UI REDESIGN
+-- ROUNDED FIX | SMOOTH ANIMATIONS
 --==================================================
 
 local Players = game:GetService("Players")
@@ -230,77 +169,50 @@ local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
---==================================================
--- REMOVE OLD GUI
---==================================================
-
 local Old = PlayerGui:FindFirstChild("PyroVexLoader")
-if Old then
-    Old:Destroy()
-end
+if Old then Old:Destroy() end
 
 --==================================================
--- PREMIUM THEME
+-- THEME
 --==================================================
 
 local C = {
-    Background = Color3.fromRGB(9,11,19),
-    Header = Color3.fromRGB(14,17,29),
-    Panel = Color3.fromRGB(15,19,32),
-    Card = Color3.fromRGB(22,27,43),
-    CardHover = Color3.fromRGB(30,37,58),
+    Background = Color3.fromRGB(8,10,18),
+    Header = Color3.fromRGB(13,17,30),
+    Panel = Color3.fromRGB(13,18,32),
+
+    Card = Color3.fromRGB(21,28,46),
+    CardHover = Color3.fromRGB(31,42,67),
+    CardDeep = Color3.fromRGB(16,22,38),
 
     Blue = Color3.fromRGB(48,132,255),
-    LightBlue = Color3.fromRGB(104,175,255),
-
+    LightBlue = Color3.fromRGB(110,185,255),
     Purple = Color3.fromRGB(139,77,255),
-    LightPurple = Color3.fromRGB(185,139,255),
-
+    LightPurple = Color3.fromRGB(190,145,255),
     Red = Color3.fromRGB(235,65,83),
     Green = Color3.fromRGB(48,205,135),
 
-    White = Color3.fromRGB(245,247,255),
-    Gray = Color3.fromRGB(143,153,177),
-    DarkGray = Color3.fromRGB(80,91,117),
+    White = Color3.fromRGB(245,248,255),
+    Gray = Color3.fromRGB(143,155,180),
+    Border = Color3.fromRGB(44,57,86),
 
-    Border = Color3.fromRGB(43,53,78),
-    CopyBackground = Color3.fromRGB(43,48,78),
-    CopyBorder = Color3.fromRGB(105,113,190)
+    CopyBackground = Color3.fromRGB(42,48,79),
+    CopyBorder = Color3.fromRGB(105,118,190)
 }
-
---==================================================
--- ANIMATION SETTINGS
---==================================================
 
 local Animation = {
-    Open = 0.45,
-    Close = 0.30,
-    Minimize = 0.28,
-    Restore = 0.38,
-    Hover = 0.18,
+    Open = 0.55,
+    Close = 0.32,
+    Minimize = 0.30,
+    Restore = 0.48,
+    Hover = 0.22,
     Button = 0.12,
-    Tab = 0.22
+    Tab = 0.28,
+    Card = 0.32
 }
 
-local function Tween(obj,properties,duration,style,direction)
-    if not obj or not obj.Parent then
-        return
-    end
-
-    local info = TweenInfo.new(
-        duration or 0.25,
-        style or Enum.EasingStyle.Quart,
-        direction or Enum.EasingDirection.Out
-    )
-
-    local tween = TweenService:Create(obj,info,properties)
-    tween:Play()
-
-    return tween
-end
-
 --==================================================
--- HELPER FUNCTIONS
+-- HELPERS
 --==================================================
 
 local function New(class,props,parent)
@@ -315,7 +227,7 @@ local function New(class,props,parent)
 end
 
 local function Round(obj,radius)
-    New("UICorner",{
+    return New("UICorner",{
         CornerRadius = UDim.new(0,radius)
     },obj)
 end
@@ -338,44 +250,73 @@ local function Gradient(obj,color1,color2,rotation)
     },obj)
 end
 
-local function ButtonAnimation(button,normalColor,hoverColor)
-    button.MouseEnter:Connect(function()
-        Tween(button,{
-            BackgroundColor3 = hoverColor
-        },Animation.Hover)
-    end)
+local function Tween(obj,properties,duration,style,direction)
+    if not obj or not obj.Parent then return end
 
-    button.MouseLeave:Connect(function()
-        Tween(button,{
-            BackgroundColor3 = normalColor
-        },Animation.Hover)
-    end)
+    local tween = TweenService:Create(
+        obj,
+        TweenInfo.new(
+            duration or 0.25,
+            style or Enum.EasingStyle.Quart,
+            direction or Enum.EasingDirection.Out
+        ),
+        properties
+    )
 
-    button.MouseButton1Down:Connect(function()
-        Tween(button,{
-            Size = UDim2.new(
-                button.Size.X.Scale,
-                button.Size.X.Offset - 3,
-                button.Size.Y.Scale,
-                button.Size.Y.Offset - 2
-            )
-        },Animation.Button)
-    end)
-
-    button.MouseButton1Up:Connect(function()
-        Tween(button,{
-            Size = UDim2.new(
-                button.Size.X.Scale,
-                button.Size.X.Offset + 3,
-                button.Size.Y.Scale,
-                button.Size.Y.Offset + 2
-            )
-        },Animation.Button)
-    end)
+    tween:Play()
+    return tween
 end
 
 local function GetLoadstring(url)
     return 'loadstring(game:HttpGet("'..url..'"))()'
+end
+
+--==================================================
+-- IMPROVED BUTTON ANIMATION
+--==================================================
+
+local function ButtonAnimation(button,normalColor,hoverColor)
+
+    local originalSize = button.Size
+
+    button.MouseEnter:Connect(function()
+
+        Tween(button,{
+            BackgroundColor3 = hoverColor
+        },Animation.Hover)
+
+    end)
+
+    button.MouseLeave:Connect(function()
+
+        Tween(button,{
+            BackgroundColor3 = normalColor,
+            Size = originalSize
+        },Animation.Hover)
+
+    end)
+
+    button.MouseButton1Down:Connect(function()
+
+        Tween(button,{
+            Size = UDim2.new(
+                originalSize.X.Scale,
+                originalSize.X.Offset - 2,
+                originalSize.Y.Scale,
+                originalSize.Y.Offset - 2
+            )
+        },Animation.Button)
+
+    end)
+
+    button.MouseButton1Up:Connect(function()
+
+        Tween(button,{
+            Size = originalSize
+        },Animation.Button,Enum.EasingStyle.Back)
+
+    end)
+
 end
 
 --==================================================
@@ -429,10 +370,6 @@ local UniversalScripts = {
     }
 }
 
---==================================================
--- SECTION LIST
---==================================================
-
 local Sections = {
     {Name = "STEAL AN EGG",Width = 116},
     {Name = "GROW A GARDEN",Width = 116},
@@ -453,43 +390,54 @@ local Screen = New("ScreenGui",{
 },PlayerGui)
 
 --==================================================
--- MAIN WINDOW
+-- MAIN WINDOW / OUTER FRAME
 --==================================================
+
+local Outer = New("Frame",{
+    Name = "OuterFrame",
+    Size = UDim2.fromOffset(486,346),
+    Position = UDim2.new(0.5,-243,0.5,-173),
+    BackgroundColor3 = C.Blue,
+    BorderSizePixel = 0,
+    ClipsDescendants = false,
+    Active = true
+},Screen)
+
+Round(Outer,21)
+Gradient(Outer,C.Blue,C.Purple,25)
+Outline(Outer,C.LightBlue,1,0.35)
 
 local Main = New("Frame",{
     Name = "Main",
-    Size = UDim2.fromOffset(470,330),
-    Position = UDim2.new(0.5,-235,0.5,-165),
+    Size = UDim2.new(1,-4,1,-4),
+    Position = UDim2.fromOffset(2,2),
     BackgroundColor3 = C.Background,
     BorderSizePixel = 0,
     ClipsDescendants = true,
     Active = true
-},Screen)
+},Outer)
 
-Round(Main,17)
-Outline(Main,C.Border,1.2)
+Round(Main,19)
 
 local MainScale = New("UIScale",{
-    Scale = 0.88
-},Main)
+    Scale = 0.82
+},Outer)
 
 --==================================================
--- TOP GRADIENT ACCENT
+-- TOP ACCENT
 --==================================================
 
-local Accent = New("Frame",{
-    Size = UDim2.new(1,0,0,3),
+local TopAccent = New("Frame",{
+    Name = "TopAccent",
+    Size = UDim2.new(1,-28,0,3),
+    Position = UDim2.fromOffset(14,5),
     BackgroundColor3 = C.Blue,
     BorderSizePixel = 0,
-    ZIndex = 10
+    ZIndex = 20
 },Main)
 
-Gradient(
-    Accent,
-    C.Blue,
-    C.Purple,
-    0
-)
+Round(TopAccent,3)
+Gradient(TopAccent,C.Blue,C.Purple,0)
 
 --==================================================
 -- HEADER
@@ -497,109 +445,124 @@ Gradient(
 
 local Header = New("Frame",{
     Name = "Header",
-    Size = UDim2.new(1,0,0,87),
-    Position = UDim2.fromOffset(0,3),
+    Size = UDim2.new(1,-16,0,80),
+    Position = UDim2.fromOffset(8,10),
     BackgroundColor3 = C.Header,
     BorderSizePixel = 0,
-    Active = true
+    Active = true,
+    ClipsDescendants = true,
+    ZIndex = 5
 },Main)
 
--- Header gradient
-
-Gradient(
-    Header,
-    Color3.fromRGB(20,25,46),
-    Color3.fromRGB(23,17,43),
-    0
-)
-
--- Header bottom line
+Round(Header,15)
+Gradient(Header,Color3.fromRGB(19,28,50),Color3.fromRGB(24,17,48),0)
+Outline(Header,C.Border,1,0.3)
 
 local HeaderLine = New("Frame",{
     Size = UDim2.new(1,-30,0,1),
     Position = UDim2.new(0,15,1,-1),
     BackgroundColor3 = C.Border,
-    BorderSizePixel = 0
+    BorderSizePixel = 0,
+    ZIndex = 6
 },Header)
 
 --==================================================
--- TITLE LOGO
+-- LOGO
 --==================================================
 
 local Logo = New("Frame",{
-    Size = UDim2.fromOffset(45,45),
-    Position = UDim2.fromOffset(17,18),
+    Size = UDim2.fromOffset(46,46),
+    Position = UDim2.fromOffset(13,16),
     BackgroundColor3 = C.Blue,
-    BorderSizePixel = 0
+    BorderSizePixel = 0,
+    ZIndex = 7
 },Header)
 
 Round(Logo,13)
-
-Gradient(
-    Logo,
-    C.LightBlue,
-    C.Purple,
-    45
-)
-
-Outline(Logo,C.LightPurple,1,0.35)
+Gradient(Logo,C.LightBlue,C.Purple,45)
+Outline(Logo,C.LightPurple,1.4,0.15)
 
 New("TextLabel",{
     Size = UDim2.fromScale(1,1),
     BackgroundTransparency = 1,
     Text = "P",
     TextColor3 = C.White,
-    TextSize = 28,
-    Font = Enum.Font.GothamBlack
+    TextSize = 29,
+    Font = Enum.Font.GothamBlack,
+    ZIndex = 8
 },Logo)
 
---==================================================
--- HEADER TEXT
---==================================================
-
 New("TextLabel",{
-    Position = UDim2.fromOffset(73,18),
-    Size = UDim2.fromOffset(250,25),
+    Position = UDim2.fromOffset(70,13),
+    Size = UDim2.fromOffset(250,26),
     BackgroundTransparency = 1,
     Text = "PYROVEX LOADER",
     TextColor3 = C.White,
     TextSize = 17,
     TextXAlignment = Enum.TextXAlignment.Left,
-    Font = Enum.Font.GothamBlack
+    Font = Enum.Font.GothamBlack,
+    ZIndex = 7
 },Header)
 
 New("TextLabel",{
-    Position = UDim2.fromOffset(74,44),
-    Size = UDim2.fromOffset(290,15),
+    Position = UDim2.fromOffset(71,39),
+    Size = UDim2.fromOffset(260,15),
     BackgroundTransparency = 1,
     Text = "PYROVEX HUB COMMUNITY",
     TextColor3 = C.LightBlue,
     TextSize = 9,
     TextXAlignment = Enum.TextXAlignment.Left,
-    Font = Enum.Font.GothamBold
+    Font = Enum.Font.GothamBold,
+    ZIndex = 7
 },Header)
-
--- Small status indicator
 
 local StatusDot = New("Frame",{
     Size = UDim2.fromOffset(7,7),
-    Position = UDim2.fromOffset(74,65),
+    Position = UDim2.fromOffset(71,61),
     BackgroundColor3 = C.Green,
-    BorderSizePixel = 0
+    BorderSizePixel = 0,
+    ZIndex = 7
 },Header)
 
 Round(StatusDot,100)
 
 New("TextLabel",{
-    Position = UDim2.fromOffset(86,62),
-    Size = UDim2.fromOffset(160,13),
+    Position = UDim2.fromOffset(83,58),
+    Size = UDim2.fromOffset(150,13),
     BackgroundTransparency = 1,
     Text = "LOADER ACTIVE",
     TextColor3 = C.Gray,
     TextSize = 7,
     TextXAlignment = Enum.TextXAlignment.Left,
-    Font = Enum.Font.GothamBold
+    Font = Enum.Font.GothamBold,
+    ZIndex = 7
 },Header)
+
+--==================================================
+-- STATUS PULSE
+--==================================================
+
+task.spawn(function()
+
+    while Screen.Parent do
+
+        Tween(StatusDot,{
+            BackgroundTransparency = 0.65
+        },0.65)
+
+        task.wait(0.65)
+
+        if not Screen.Parent then break end
+
+        Tween(StatusDot,{
+            BackgroundTransparency = 0
+        },0.65)
+
+        task.wait(0.65)
+
+    end
+
+end)
 
 --==================================================
 -- HEADER BUTTONS
@@ -607,111 +570,120 @@ New("TextLabel",{
 
 local Minimize = New("TextButton",{
     Size = UDim2.fromOffset(29,29),
-    Position = UDim2.new(1,-69,0,23),
+    Position = UDim2.new(1,-67,0,24),
     BackgroundColor3 = C.Card,
     Text = "—",
     TextColor3 = C.White,
-    TextSize = 17,
-    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    Font = Enum.Font.GothamBlack,
     AutoButtonColor = false,
-    BorderSizePixel = 0
+    BorderSizePixel = 0,
+    ZIndex = 10
 },Header)
 
 Round(Minimize,9)
 Outline(Minimize,C.Border,1)
-
-ButtonAnimation(
-    Minimize,
-    C.Card,
-    Color3.fromRGB(53,68,103)
-)
+ButtonAnimation(Minimize,C.Card,Color3.fromRGB(60,80,125))
 
 local Close = New("TextButton",{
     Size = UDim2.fromOffset(29,29),
-    Position = UDim2.new(1,-34,0,23),
+    Position = UDim2.new(1,-32,0,24),
     BackgroundColor3 = Color3.fromRGB(65,28,43),
     Text = "×",
     TextColor3 = C.Red,
-    TextSize = 18,
+    TextSize = 19,
     Font = Enum.Font.GothamBold,
     AutoButtonColor = false,
-    BorderSizePixel = 0
+    BorderSizePixel = 0,
+    ZIndex = 10
 },Header)
 
 Round(Close,9)
-Outline(Close,C.Red,1,0.55)
-
-ButtonAnimation(
-    Close,
-    Color3.fromRGB(65,28,43),
-    C.Red
-)
+Outline(Close,C.Red,1,0.45)
+ButtonAnimation(Close,Color3.fromRGB(65,28,43),C.Red)
 
 --==================================================
--- SECTION LABEL
+-- SECTION TITLE
 --==================================================
 
 New("TextLabel",{
-    Size = UDim2.new(1,-24,0,15),
-    Position = UDim2.fromOffset(14,96),
+    Size = UDim2.new(1,-30,0,15),
+    Position = UDim2.fromOffset(16,98),
     BackgroundTransparency = 1,
-    Text = "  SCRIPT COLLECTION",
+    Text = "SCRIPT COLLECTION",
     TextColor3 = C.Gray,
     TextSize = 8,
     TextXAlignment = Enum.TextXAlignment.Left,
-    Font = Enum.Font.GothamBold
+    Font = Enum.Font.GothamBlack,
+    ZIndex = 5
 },Main)
 
+local SectionAccent = New("Frame",{
+    Size = UDim2.fromOffset(3,9),
+    Position = UDim2.fromOffset(11,101),
+    BackgroundColor3 = C.Blue,
+    BorderSizePixel = 0,
+    ZIndex = 6
+},Main)
+
+Round(SectionAccent,3)
+Gradient(SectionAccent,C.Blue,C.Purple,90)
+
 --==================================================
--- TAB HOLDER
+-- TABS
 --==================================================
 
 local Tabs = New("ScrollingFrame",{
     Name = "Tabs",
-    Size = UDim2.new(1,-24,0,36),
-    Position = UDim2.fromOffset(12,115),
+    Size = UDim2.new(1,-28,0,37),
+    Position = UDim2.fromOffset(14,118),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     ScrollBarThickness = 0,
     CanvasSize = UDim2.fromOffset(0,0),
     AutomaticCanvasSize = Enum.AutomaticSize.X,
-    ScrollingDirection = Enum.ScrollingDirection.X
+    ScrollingDirection = Enum.ScrollingDirection.X,
+    ZIndex = 5
 },Main)
 
 New("UIListLayout",{
     FillDirection = Enum.FillDirection.Horizontal,
-    Padding = UDim.new(0,7),
+    Padding = UDim.new(0,8),
     SortOrder = Enum.SortOrder.LayoutOrder
 },Tabs)
 
 --==================================================
--- CONTENT AREA
+-- CONTENT
 --==================================================
 
 local Content = New("ScrollingFrame",{
     Name = "Content",
-    Size = UDim2.new(1,-24,1,-179),
-    Position = UDim2.fromOffset(12,158),
+    Size = UDim2.new(1,-28,1,-174),
+    Position = UDim2.fromOffset(14,163),
     BackgroundColor3 = C.Panel,
     BorderSizePixel = 0,
+    ClipsDescendants = true,
     ScrollBarThickness = 3,
     ScrollBarImageColor3 = C.Blue,
+    ScrollBarImageTransparency = 0.1,
     CanvasSize = UDim2.fromOffset(0,0),
-    AutomaticCanvasSize = Enum.AutomaticSize.Y
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    ScrollingDirection = Enum.ScrollingDirection.Y,
+    ZIndex = 5
 },Main)
 
-Round(Content,13)
+Round(Content,14)
 Outline(Content,C.Border,1)
 
 New("UIPadding",{
-    PaddingTop = UDim.new(0,11),
-    PaddingBottom = UDim.new(0,11),
-    PaddingLeft = UDim.new(0,10),
-    PaddingRight = UDim.new(0,10)
+    PaddingTop = UDim.new(0,12),
+    PaddingBottom = UDim.new(0,12),
+    PaddingLeft = UDim.new(0,11),
+    PaddingRight = UDim.new(0,11)
 },Content)
 
 New("UIListLayout",{
-    Padding = UDim.new(0,9),
+    Padding = UDim.new(0,10),
     SortOrder = Enum.SortOrder.LayoutOrder
 },Content)
 
@@ -727,65 +699,45 @@ local function CreateScriptCard(scriptInfo,index)
         BackgroundColor3 = C.Card,
         BorderSizePixel = 0,
         LayoutOrder = index,
-        BackgroundTransparency = 1
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        ZIndex = 6
     },Content)
 
     Round(Card,12)
 
-    local CardStroke = Outline(
-        Card,
-        C.Border,
-        1
-    )
+    local CardStroke = Outline(Card,C.Border,1)
 
     local CardScale = New("UIScale",{
         Scale = 0.96
     },Card)
 
-    Tween(Card,{
-        BackgroundTransparency = 0
-    },0.25)
-
-    Tween(CardScale,{
-        Scale = 1
-    },0.3)
-
-    -- Left accent
+    -- CARD ACCENT
 
     local CardAccent = New("Frame",{
         Size = UDim2.new(0,3,1,-24),
-        Position = UDim2.fromOffset(0,12),
+        Position = UDim2.fromOffset(5,12),
         BackgroundColor3 = C.Blue,
-        BorderSizePixel = 0
+        BorderSizePixel = 0,
+        ZIndex = 7
     },Card)
 
     Round(CardAccent,5)
-
-    Gradient(
-        CardAccent,
-        C.Blue,
-        C.Purple,
-        90
-    )
+    Gradient(CardAccent,C.Blue,C.Purple,90)
 
     -- SCRIPT ICON
-    -- P logo is only in the main title.
 
     local Icon = New("Frame",{
-        Size = UDim2.fromOffset(43,43),
-        Position = UDim2.fromOffset(12,19),
-        BackgroundColor3 = Color3.fromRGB(35,43,70),
-        BorderSizePixel = 0
+        Size = UDim2.fromOffset(44,44),
+        Position = UDim2.fromOffset(13,19),
+        BackgroundColor3 = Color3.fromRGB(32,44,72),
+        BorderSizePixel = 0,
+        ZIndex = 7
     },Card)
 
     Round(Icon,11)
-
-    Outline(
-        Icon,
-        C.Blue,
-        1,
-        0.55
-    )
+    Gradient(Icon,Color3.fromRGB(44,75,120),Color3.fromRGB(54,39,100),45)
+    Outline(Icon,C.Blue,1,0.45)
 
     New("TextLabel",{
         Size = UDim2.fromScale(1,1),
@@ -793,39 +745,41 @@ local function CreateScriptCard(scriptInfo,index)
         Text = "📜",
         TextColor3 = C.White,
         TextSize = 23,
-        Font = Enum.Font.GothamBold
+        Font = Enum.Font.GothamBold,
+        ZIndex = 8
     },Icon)
 
     -- SCRIPT NAME
 
     New("TextLabel",{
-        Position = UDim2.fromOffset(67,11),
-        Size = UDim2.new(1,-225,0,18),
+        Position = UDim2.fromOffset(68,10),
+        Size = UDim2.new(1,-225,0,19),
         BackgroundTransparency = 1,
         Text = scriptInfo.Name,
         TextColor3 = C.White,
         TextSize = 10,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.GothamBlack
+        Font = Enum.Font.GothamBlack,
+        ZIndex = 7
     },Card)
 
     -- SCRIPT DESCRIPTION
 
     New("TextLabel",{
-        Position = UDim2.fromOffset(67,31),
+        Position = UDim2.fromOffset(68,31),
         Size = UDim2.new(1,-225,0,16),
         BackgroundTransparency = 1,
         Text = scriptInfo.Subtitle,
         TextColor3 = C.Gray,
         TextSize = 7,
         TextWrapped = false,
+        TextTruncate = Enum.TextTruncate.AtEnd,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.GothamMedium
+        Font = Enum.Font.GothamMedium,
+        ZIndex = 7
     },Card)
 
-    --==================================================
     -- BADGES
-    --==================================================
 
     local HasHubBadges =
         scriptInfo.Name == "ADMIN BADGE"
@@ -835,7 +789,7 @@ local function CreateScriptCard(scriptInfo,index)
         or scriptInfo.Name == "PYROVEX HUB SHADER"
         or scriptInfo.Name == "TOKEN SPAWNER"
 
-    local BadgeX = 67
+    local BadgeX = 68
 
     local function CreateBadge(text,color,width)
 
@@ -848,54 +802,36 @@ local function CreateScriptCard(scriptInfo,index)
             TextColor3 = C.White,
             TextSize = 6,
             Font = Enum.Font.GothamBold,
-            BorderSizePixel = 0
+            BorderSizePixel = 0,
+            ZIndex = 8
         },Card)
 
-        Round(Badge,4)
+        Round(Badge,5)
 
         BadgeX = BadgeX + width + 5
+
     end
 
     if scriptInfo.Name == "CHILI HUB" then
 
-        CreateBadge(
-            "FEATURED",
-            C.Purple,
-            48
-        )
+        CreateBadge("FEATURED",C.Purple,48)
 
     elseif HasHubBadges then
 
-        CreateBadge(
-            "FEATURED",
-            C.Purple,
-            48
-        )
-
-        CreateBadge(
-            "BY PYROVEX HUB",
-            Color3.fromRGB(54,65,110),
-            75
-        )
+        CreateBadge("FEATURED",C.Purple,48)
+        CreateBadge("BY PYROVEX HUB",Color3.fromRGB(54,65,110),75)
 
     end
 
     if scriptInfo.Name == "TOKEN SPAWNER" then
-
-        CreateBadge(
-            "KEY REQUIRED",
-            C.Red,
-            65
-        )
-
+        CreateBadge("KEY REQUIRED",C.Red,65)
     end
 
-    --==================================================
     -- EXECUTE BUTTON
-    --==================================================
 
     local Execute = New("TextButton",{
-        Size = UDim2.fromOffset(69,27),
+        Name = "ExecuteButton",
+        Size = UDim2.fromOffset(69,28),
         Position = UDim2.new(1,-151,0,27),
         BackgroundColor3 = C.Blue,
         Text = "EXECUTE",
@@ -903,24 +839,13 @@ local function CreateScriptCard(scriptInfo,index)
         TextSize = 8,
         Font = Enum.Font.GothamBlack,
         AutoButtonColor = false,
-        BorderSizePixel = 0
+        BorderSizePixel = 0,
+        ZIndex = 9
     },Card)
 
     Round(Execute,8)
-
-    local ExecuteStroke = Outline(
-        Execute,
-        C.LightBlue,
-        1,
-        0.25
-    )
-
-    Gradient(
-        Execute,
-        C.Blue,
-        C.Purple,
-        0
-    )
+    Outline(Execute,C.LightBlue,1,0.25)
+    Gradient(Execute,C.Blue,C.Purple,0)
 
     ButtonAnimation(
         Execute,
@@ -928,12 +853,11 @@ local function CreateScriptCard(scriptInfo,index)
         Color3.fromRGB(95,120,255)
     )
 
-    --==================================================
     -- COPY BUTTON
-    --==================================================
 
     local Copy = New("TextButton",{
-        Size = UDim2.fromOffset(64,27),
+        Name = "CopyButton",
+        Size = UDim2.fromOffset(64,28),
         Position = UDim2.new(1,-75,0,27),
         BackgroundColor3 = C.CopyBackground,
         Text = "COPY",
@@ -941,16 +865,12 @@ local function CreateScriptCard(scriptInfo,index)
         TextSize = 8,
         Font = Enum.Font.GothamBlack,
         AutoButtonColor = false,
-        BorderSizePixel = 0
+        BorderSizePixel = 0,
+        ZIndex = 9
     },Card)
 
     Round(Copy,8)
-
-    Outline(
-        Copy,
-        C.CopyBorder,
-        1
-    )
+    Outline(Copy,C.CopyBorder,1)
 
     ButtonAnimation(
         Copy,
@@ -958,34 +878,22 @@ local function CreateScriptCard(scriptInfo,index)
         Color3.fromRGB(78,85,145)
     )
 
-    --==================================================
     -- EXECUTE FUNCTION
-    --==================================================
 
     local Executing = false
 
     Execute.MouseButton1Click:Connect(function()
 
-        if Executing then
-            return
-        end
+        if Executing then return end
 
         Executing = true
-
         Execute.Text = "LOADING..."
-
-        Tween(Execute,{
-            BackgroundColor3 = Color3.fromRGB(80,91,180)
-        },0.15)
 
         task.spawn(function()
 
             local success,err = pcall(function()
 
-                local source = game:HttpGet(
-                    scriptInfo.URL
-                )
-
+                local source = game:HttpGet(scriptInfo.URL)
                 local func = loadstring(source)
 
                 if not func then
@@ -1000,17 +908,9 @@ local function CreateScriptCard(scriptInfo,index)
 
                 Execute.Text = "EXECUTED"
 
-                Tween(Execute,{
-                    BackgroundColor3 = C.Green
-                },0.2)
-
             else
 
                 Execute.Text = "FAILED"
-
-                Tween(Execute,{
-                    BackgroundColor3 = C.Red
-                },0.2)
 
                 warn(
                     "[PYROVEX LOADER] "
@@ -1023,11 +923,9 @@ local function CreateScriptCard(scriptInfo,index)
 
             task.wait(1.5)
 
-            Execute.Text = "EXECUTE"
-
-            Tween(Execute,{
-                BackgroundColor3 = C.Blue
-            },0.2)
+            if Execute and Execute.Parent then
+                Execute.Text = "EXECUTE"
+            end
 
             Executing = false
 
@@ -1035,21 +933,17 @@ local function CreateScriptCard(scriptInfo,index)
 
     end)
 
-    --==================================================
     -- COPY FUNCTION
-    --==================================================
 
     Copy.MouseButton1Click:Connect(function()
 
-        local success = pcall(function()
+        local success,err = pcall(function()
 
             if not setclipboard then
                 error("Clipboard is unsupported")
             end
 
-            setclipboard(
-                GetLoadstring(scriptInfo.URL)
-            )
+            setclipboard(GetLoadstring(scriptInfo.URL))
 
         end)
 
@@ -1057,39 +951,28 @@ local function CreateScriptCard(scriptInfo,index)
 
             Copy.Text = "COPIED"
 
-            Tween(Copy,{
-                BackgroundColor3 = C.Green
-            },0.2)
-
         else
 
             Copy.Text = "FAILED"
 
-                        Tween(Copy,{
-                    BackgroundColor3 = C.Red
-                },0.2)
+            warn(
+                "[PYROVEX LOADER] COPY ERROR: "
+                ..tostring(err)
+            )
 
-            end
+        end
 
         task.delay(1.5,function()
 
             if Copy and Copy.Parent then
-
                 Copy.Text = "COPY"
-
-                Tween(Copy,{
-                    BackgroundColor3 = C.CopyBackground
-                },0.2)
-
             end
 
         end)
 
     end)
 
-    --==================================================
     -- CARD HOVER ANIMATION
-    --==================================================
 
     Card.MouseEnter:Connect(function()
 
@@ -1098,7 +981,17 @@ local function CreateScriptCard(scriptInfo,index)
         },Animation.Hover)
 
         Tween(CardStroke,{
-            Color = C.LightBlue
+            Color = C.LightBlue,
+            Transparency = 0.1
+        },Animation.Hover)
+
+        Tween(CardScale,{
+            Scale = 1
+        },Animation.Hover)
+
+        Tween(CardAccent,{
+            Size = UDim2.new(0,4,1,-12),
+            Position = UDim2.fromOffset(5,6)
         },Animation.Hover)
 
     end)
@@ -1110,10 +1003,30 @@ local function CreateScriptCard(scriptInfo,index)
         },Animation.Hover)
 
         Tween(CardStroke,{
-            Color = C.Border
+            Color = C.Border,
+            Transparency = 0
+        },Animation.Hover)
+
+        Tween(CardScale,{
+            Scale = 0.96
+        },Animation.Hover)
+
+        Tween(CardAccent,{
+            Size = UDim2.new(0,3,1,-24),
+            Position = UDim2.fromOffset(5,12)
         },Animation.Hover)
 
     end)
+
+    -- CARD ENTRANCE
+
+    Tween(Card,{
+        BackgroundTransparency = 0
+    },Animation.Card)
+
+    Tween(CardScale,{
+        Scale = 1
+    },Animation.Card,Enum.EasingStyle.Back)
 
 end
 
@@ -1133,18 +1046,38 @@ local function SelectTab(name)
         local active = tabName == name
 
         Tween(tab,{
-            BackgroundColor3 =
-                active and C.Blue or C.Card
+            BackgroundColor3 = active and C.Blue or C.Card,
+            TextColor3 = active and C.White or C.Gray
         },Animation.Tab)
 
-        Tween(tab,{
-            TextColor3 =
-                active and C.White or C.Gray
-        },Animation.Tab)
+        local stroke = tab:FindFirstChild("TabStroke")
+
+        if stroke then
+
+            Tween(stroke,{
+                Color = active and C.LightBlue or C.Border,
+                Transparency = active and 0.1 or 0
+            },Animation.Tab)
+
+        end
+
+        local indicator = tab:FindFirstChild("Indicator")
+
+        if indicator then
+
+            Tween(indicator,{
+                Size = active
+                    and UDim2.new(0.55,0,0,2)
+                    or UDim2.new(0,0,0,2),
+
+                BackgroundTransparency = active and 0 or 1
+            },Animation.Tab)
+
+        end
 
     end
 
-    -- CLEAR OLD CARDS
+    -- CLEAR OLD CONTENT
 
     for _,child in ipairs(Content:GetChildren()) do
 
@@ -1156,7 +1089,7 @@ local function SelectTab(name)
 
     Content.CanvasPosition = Vector2.new(0,0)
 
-    -- LOAD SELECTED SECTION
+    -- SELECT SCRIPTS
 
     local selectedScripts = {}
 
@@ -1178,6 +1111,8 @@ local function SelectTab(name)
 
     end
 
+    -- CREATE CARDS
+
     for index,scriptInfo in ipairs(selectedScripts) do
         CreateScriptCard(scriptInfo,index)
     end
@@ -1192,7 +1127,7 @@ for index,section in ipairs(Sections) do
 
     local Tab = New("TextButton",{
         Name = section.Name,
-        Size = UDim2.fromOffset(section.Width,32),
+        Size = UDim2.fromOffset(section.Width,33),
         BackgroundColor3 = C.Card,
         Text = section.Name,
         TextColor3 = C.Gray,
@@ -1201,16 +1136,26 @@ for index,section in ipairs(Sections) do
         AutoButtonColor = false,
         BorderSizePixel = 0,
         LayoutOrder = index,
-        ZIndex = 13
+        ClipsDescendants = true,
+        ZIndex = 7
     },Tabs)
 
     Round(Tab,9)
 
-    Outline(
-        Tab,
-        C.Border,
-        1
-    )
+    local TabStroke = Outline(Tab,C.Border,1)
+    TabStroke.Name = "TabStroke"
+
+    local Indicator = New("Frame",{
+        Name = "Indicator",
+        Size = UDim2.new(0,0,0,2),
+        Position = UDim2.new(0.225,0,1,-4),
+        BackgroundColor3 = C.White,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 9
+    },Tab)
+
+    Round(Indicator,5)
 
     TabButtons[section.Name] = Tab
 
@@ -1223,8 +1168,7 @@ for index,section in ipairs(Sections) do
         if SelectedTab ~= section.Name then
 
             Tween(Tab,{
-                BackgroundColor3 =
-                    Color3.fromRGB(39,48,75)
+                BackgroundColor3 = Color3.fromRGB(38,51,79)
             },Animation.Hover)
 
         end
@@ -1246,24 +1190,18 @@ for index,section in ipairs(Sections) do
 end
 
 --==================================================
--- DEFAULT SELECTED TAB
---==================================================
-
-SelectTab("STEAL AN EGG")
-
---==================================================
 -- FLOATING MINIMIZE BUTTON
 --==================================================
 
 local FloatingButton = New("TextButton",{
     Name = "FloatingButton",
-    Size = UDim2.fromOffset(49,49),
-    Position = UDim2.new(0,20,0.5,-24),
+    Size = UDim2.fromOffset(50,50),
+    Position = UDim2.new(0,20,0.5,-25),
     BackgroundColor3 = C.Blue,
-    Text = "📜",
+    Text = "P",
     TextColor3 = C.White,
-    TextSize = 23,
-    Font = Enum.Font.GothamBold,
+    TextSize = 25,
+    Font = Enum.Font.GothamBlack,
     AutoButtonColor = false,
     BorderSizePixel = 0,
     Visible = false,
@@ -1272,29 +1210,18 @@ local FloatingButton = New("TextButton",{
 },Screen)
 
 Round(FloatingButton,100)
-
-Outline(
-    FloatingButton,
-    C.LightBlue,
-    1.5
-)
-
-Gradient(
-    FloatingButton,
-    C.Blue,
-    C.Purple,
-    45
-)
+Outline(FloatingButton,C.LightBlue,1.5)
+Gradient(FloatingButton,C.LightBlue,C.Purple,45)
 
 local FloatingScale = New("UIScale",{
-    Scale = 1
+    Scale = 0.7
 },FloatingButton)
 
 FloatingButton.MouseEnter:Connect(function()
 
     Tween(FloatingScale,{
         Scale = 1.12
-    },0.18)
+    },0.18,Enum.EasingStyle.Back)
 
 end)
 
@@ -1310,85 +1237,111 @@ end)
 -- OPENING ANIMATION
 --==================================================
 
-Main.Visible = true
 Main.BackgroundTransparency = 1
+Outer.BackgroundTransparency = 1
+
+Tween(Outer,{
+    BackgroundTransparency = 0
+},Animation.Open)
 
 Tween(Main,{
     BackgroundTransparency = 0
 },Animation.Open)
 
-Tween(MainScale,{
-    Scale = 1
-},Animation.Open)
+Tween(
+    MainScale,
+    {Scale = 1},
+    Animation.Open,
+    Enum.EasingStyle.Back
+)
 
 --==================================================
--- MINIMIZE ANIMATION
+-- MINIMIZE / RESTORE
 --==================================================
 
 local IsAnimating = false
+local Closing = false
 
 Minimize.MouseButton1Click:Connect(function()
 
-    if IsAnimating then
-        return
-    end
+    if IsAnimating or Closing then return end
 
     IsAnimating = true
 
-    Tween(MainScale,{
-        Scale = 0.82
-    },Animation.Minimize)
+    Tween(
+        MainScale,
+        {Scale = 0.78},
+        Animation.Minimize,
+        Enum.EasingStyle.Quint,
+        Enum.EasingDirection.In
+    )
 
     local fade = Tween(Main,{
         BackgroundTransparency = 1
     },Animation.Minimize)
 
+    Tween(Outer,{
+        BackgroundTransparency = 1
+    },Animation.Minimize)
+
     fade.Completed:Wait()
 
-    if not Screen.Parent then
-        return
-    end
+    if not Screen.Parent then return end
 
     Main.Visible = false
-    Main.BackgroundTransparency = 0
-    MainScale.Scale = 0.82
+    Outer.Visible = false
 
     FloatingButton.Visible = true
     FloatingScale.Scale = 0.65
 
-    Tween(FloatingScale,{
-        Scale = 1
-    },Animation.Restore)
+    Tween(
+        FloatingScale,
+        {Scale = 1},
+        Animation.Restore,
+        Enum.EasingStyle.Back
+    )
 
     IsAnimating = false
 
 end)
 
---==================================================
--- RESTORE ANIMATION
---==================================================
-
 FloatingButton.MouseButton1Click:Connect(function()
 
-    if IsAnimating then
-        return
-    end
+    if IsAnimating or Closing then return end
 
     IsAnimating = true
 
+    Tween(FloatingScale,{
+        Scale = 0.65
+    },0.12)
+
+    task.wait(0.12)
+
+    if not Screen.Parent then return end
+
     FloatingButton.Visible = false
 
+    Outer.Visible = true
     Main.Visible = true
+
     Main.BackgroundTransparency = 1
-    MainScale.Scale = 0.85
+    Outer.BackgroundTransparency = 1
+    MainScale.Scale = 0.78
+
+    Tween(Outer,{
+        BackgroundTransparency = 0
+    },Animation.Restore)
 
     Tween(Main,{
         BackgroundTransparency = 0
     },Animation.Restore)
 
-    local restore = Tween(MainScale,{
-        Scale = 1
-    },Animation.Restore)
+    local restore = Tween(
+        MainScale,
+        {Scale = 1},
+        Animation.Restore,
+        Enum.EasingStyle.Back
+    )
 
     restore.Completed:Wait()
 
@@ -1400,23 +1353,27 @@ end)
 -- CLOSE ANIMATION
 --==================================================
 
-local Closing = false
-
 Close.MouseButton1Click:Connect(function()
 
-    if Closing then
-        return
-    end
+    if Closing or IsAnimating then return end
 
     Closing = true
     IsAnimating = true
+
+    Tween(
+        MainScale,
+        {Scale = 0.82},
+        Animation.Close,
+        Enum.EasingStyle.Quint,
+        Enum.EasingDirection.In
+    )
 
     local fade = Tween(Main,{
         BackgroundTransparency = 1
     },Animation.Close)
 
-    Tween(MainScale,{
-        Scale = 0.85
+    Tween(Outer,{
+        BackgroundTransparency = 1
     },Animation.Close)
 
     fade.Completed:Wait()
@@ -1434,6 +1391,7 @@ end)
 local Dragging = false
 local DragStart = nil
 local StartPosition = nil
+local DragInput = nil
 
 Header.InputBegan:Connect(function(input)
 
@@ -1442,7 +1400,7 @@ Header.InputBegan:Connect(function(input)
 
         Dragging = true
         DragStart = input.Position
-        StartPosition = Main.Position
+        StartPosition = Outer.Position
 
         input.Changed:Connect(function()
 
@@ -1456,23 +1414,32 @@ Header.InputBegan:Connect(function(input)
 
 end)
 
+Header.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        DragInput = input
+
+    end
+
+end)
+
 UserInputService.InputChanged:Connect(function(input)
 
-    if Dragging then
+    if Dragging and (
+        input == DragInput
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
 
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - DragStart
 
-            local delta = input.Position - DragStart
-
-            Main.Position = UDim2.new(
-                StartPosition.X.Scale,
-                StartPosition.X.Offset + delta.X,
-                StartPosition.Y.Scale,
-                StartPosition.Y.Offset + delta.Y
-            )
-
-        end
+        Outer.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + delta.Y
+        )
 
     end
 
@@ -1485,6 +1452,7 @@ end)
 local FloatingDragging = false
 local FloatingDragStart = nil
 local FloatingStartPosition = nil
+local FloatingDragInput = nil
 
 FloatingButton.InputBegan:Connect(function(input)
 
@@ -1507,30 +1475,41 @@ FloatingButton.InputBegan:Connect(function(input)
 
 end)
 
+FloatingButton.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        FloatingDragInput = input
+
+    end
+
+end)
+
 UserInputService.InputChanged:Connect(function(input)
 
-    if FloatingDragging then
+    if FloatingDragging and (
+        input == FloatingDragInput
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
 
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - FloatingDragStart
 
-            local delta = input.Position - FloatingDragStart
-
-            FloatingButton.Position = UDim2.new(
-                FloatingStartPosition.X.Scale,
-                FloatingStartPosition.X.Offset + delta.X,
-                FloatingStartPosition.Y.Scale,
-                FloatingStartPosition.Y.Offset + delta.Y
-            )
-
-        end
+        FloatingButton.Position = UDim2.new(
+            FloatingStartPosition.X.Scale,
+            FloatingStartPosition.X.Offset + delta.X,
+            FloatingStartPosition.Y.Scale,
+            FloatingStartPosition.Y.Offset + delta.Y
+        )
 
     end
 
 end)
 
 --==================================================
--- END OF PYROVEX LOADER V10
+-- INITIALIZE
 --==================================================
+
+SelectTab("STEAL AN EGG")
 
 print("[PYROVEX LOADER] Successfully loaded!")
