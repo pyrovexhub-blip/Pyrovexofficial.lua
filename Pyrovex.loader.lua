@@ -700,7 +700,34 @@ end)
 DiscordButton.MouseLeave:Connect(function()
     Tween(DiscordButton,{BackgroundColor3=Matte.Normal},0.15)
 end)
+local DiscordOriginalPosition = DiscordButton.Position
+local DiscordShakeTween
 DiscordButton.MouseButton1Click:Connect(function()
+    if DiscordShakeTween then DiscordShakeTween:Cancel() end
+    DiscordButton.Position = DiscordOriginalPosition
+    local shakeSteps = {
+        {X=5, Duration=0.055},
+        {X=-5, Duration=0.055},
+        {X=4, Duration=0.05},
+        {X=-4, Duration=0.05},
+        {X=0, Duration=0.07}
+    }
+    task.spawn(function()
+        for _,step in ipairs(shakeSteps) do
+            if not DiscordButton.Parent then return end
+            DiscordShakeTween=Tween(DiscordButton,{
+                Position=UDim2.new(
+                    DiscordOriginalPosition.X.Scale,
+                    DiscordOriginalPosition.X.Offset+step.X,
+                    DiscordOriginalPosition.Y.Scale,
+                    DiscordOriginalPosition.Y.Offset
+                )
+            },step.Duration,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+            if DiscordShakeTween then DiscordShakeTween.Completed:Wait() end
+        end
+        if DiscordButton.Parent then DiscordButton.Position=DiscordOriginalPosition end
+    end)
+
     local ok,err=pcall(function()
         if not setclipboard then error("Clipboard is unsupported") end
         setclipboard(DiscordLink)
@@ -947,6 +974,7 @@ local SettingsFeatures={
     Glow=true,Blur=false,Neon=true,
     Transparency=0,AnimationSpeed=100
 }
+local CurrentAnimationStyle="SMOOTH"
 local BlurEffect=Lighting:FindFirstChild("PyrovexSettingsBlur")
 local CreatedBlur=false
 if not BlurEffect then
@@ -1045,7 +1073,12 @@ MakeSectionTitle("ANIMATION SPEED",228)
 local SpeedButton=MakeSettingButton("AnimationSpeedButton","ANIMATION SPEED: 100%",246,27)
 local SpeedOptions={50,75,100,125,150,175,200}
 local function ApplyAnimationSpeed()
-    local factor=100/SettingsFeatures.AnimationSpeed
+    local styleMultipliers = {
+        SMOOTH=1.00, BOUNCE=1.10, ELASTIC=1.22,
+        SLIDE=0.92, ZOOM=0.88, FADE=0.78, SNAPPY=0.68
+    }
+    local factor=(100/SettingsFeatures.AnimationSpeed)
+        *(styleMultipliers[CurrentAnimationStyle] or 1)
     for key,baseValue in pairs(BaseAnimation) do
         Animation[key]=baseValue*factor
     end
@@ -1076,7 +1109,7 @@ local NeonToggle,SetNeon=MakeToggle(
 
 MakeSectionTitle("APPEARANCE",370)
 
-local ThemeNames={"PURPLE NEON","OCEAN BLUE","CRIMSON RED","CYBERPUNK","MIDNIGHT","EMERALD"}
+local ThemeNames={"PURPLE NEON","OCEAN BLUE","CRIMSON RED","CYBERPUNK","MIDNIGHT","EMERALD","DARK","GRAY","SUNSET","ROSE","GOLD","ARCTIC","MATRIX","LAVENDER","MONOCHROME"}
 local Themes={
     ["PURPLE NEON"]={
         Blue=Color3.fromRGB(105,90,255),LightBlue=Color3.fromRGB(165,155,255),
@@ -1140,50 +1173,233 @@ local Themes={
     }
 }
 
+
+-- Nine additional full-interface palettes (15 themes total).
+local function BuildTheme(primary, light, deep, purple, lightPurple, accentRed,
+    background, background2, header, panel, card, hover, border, copy)
+    return {
+        Blue=primary, LightBlue=light, DarkBlue=deep,
+        Purple=purple, LightPurple=lightPurple,
+        Red=accentRed, LightRed=accentRed:Lerp(Color3.new(1,1,1),0.38),
+        Background=background, Background2=background2,
+        Header=header, Header2=header:Lerp(purple,0.28),
+        Panel=panel, Card=card, CardHover=hover,
+        Border=border, CopyBackground=copy
+    }
+end
+
+Themes["DARK"] = BuildTheme(
+    Color3.fromRGB(105,115,135), Color3.fromRGB(190,198,212),
+    Color3.fromRGB(42,48,62), Color3.fromRGB(95,105,130),
+    Color3.fromRGB(175,185,205), Color3.fromRGB(125,135,155),
+    Color3.fromRGB(5,6,9), Color3.fromRGB(10,12,17),
+    Color3.fromRGB(14,16,22), Color3.fromRGB(9,11,16),
+    Color3.fromRGB(20,23,31), Color3.fromRGB(34,39,50),
+    Color3.fromRGB(55,62,76), Color3.fromRGB(34,39,50)
+)
+Themes["GRAY"] = BuildTheme(
+    Color3.fromRGB(125,135,150), Color3.fromRGB(205,212,222),
+    Color3.fromRGB(55,62,74), Color3.fromRGB(105,115,130),
+    Color3.fromRGB(190,198,210), Color3.fromRGB(145,153,166),
+    Color3.fromRGB(18,20,24), Color3.fromRGB(27,30,36),
+    Color3.fromRGB(35,39,46), Color3.fromRGB(23,26,31),
+    Color3.fromRGB(42,47,55), Color3.fromRGB(58,64,74),
+    Color3.fromRGB(82,89,101), Color3.fromRGB(57,63,73)
+)
+Themes["SUNSET"] = BuildTheme(
+    Color3.fromRGB(255,125,75), Color3.fromRGB(255,190,145),
+    Color3.fromRGB(130,55,42), Color3.fromRGB(205,85,115),
+    Color3.fromRGB(255,170,190), Color3.fromRGB(255,95,80),
+    Color3.fromRGB(22,9,13), Color3.fromRGB(39,15,20),
+    Color3.fromRGB(52,19,25), Color3.fromRGB(30,12,17),
+    Color3.fromRGB(55,22,27), Color3.fromRGB(78,31,36),
+    Color3.fromRGB(112,48,53), Color3.fromRGB(75,31,38)
+)
+Themes["ROSE"] = BuildTheme(
+    Color3.fromRGB(225,105,155), Color3.fromRGB(255,175,210),
+    Color3.fromRGB(105,40,75), Color3.fromRGB(180,90,175),
+    Color3.fromRGB(230,165,225), Color3.fromRGB(245,105,155),
+    Color3.fromRGB(19,7,15), Color3.fromRGB(32,12,25),
+    Color3.fromRGB(43,15,34), Color3.fromRGB(25,9,20),
+    Color3.fromRGB(48,17,38), Color3.fromRGB(69,27,54),
+    Color3.fromRGB(105,45,81), Color3.fromRGB(67,26,52)
+)
+Themes["GOLD"] = BuildTheme(
+    Color3.fromRGB(205,155,55), Color3.fromRGB(255,220,135),
+    Color3.fromRGB(105,75,25), Color3.fromRGB(170,125,55),
+    Color3.fromRGB(235,200,125), Color3.fromRGB(225,165,70),
+    Color3.fromRGB(17,13,6), Color3.fromRGB(29,22,10),
+    Color3.fromRGB(40,30,13), Color3.fromRGB(23,18,8),
+    Color3.fromRGB(43,33,15), Color3.fromRGB(64,49,21),
+    Color3.fromRGB(101,78,34), Color3.fromRGB(65,49,20)
+)
+Themes["ARCTIC"] = BuildTheme(
+    Color3.fromRGB(85,190,220), Color3.fromRGB(175,235,250),
+    Color3.fromRGB(30,90,115), Color3.fromRGB(90,145,205),
+    Color3.fromRGB(175,210,255), Color3.fromRGB(100,205,225),
+    Color3.fromRGB(5,15,21), Color3.fromRGB(9,25,34),
+    Color3.fromRGB(12,34,45), Color3.fromRGB(7,21,29),
+    Color3.fromRGB(15,39,51), Color3.fromRGB(24,57,72),
+    Color3.fromRGB(39,91,108), Color3.fromRGB(22,56,70)
+)
+Themes["MATRIX"] = BuildTheme(
+    Color3.fromRGB(35,205,85), Color3.fromRGB(140,255,165),
+    Color3.fromRGB(15,95,40), Color3.fromRGB(45,155,90),
+    Color3.fromRGB(155,235,175), Color3.fromRGB(80,225,105),
+    Color3.fromRGB(3,12,6), Color3.fromRGB(5,22,10),
+    Color3.fromRGB(7,31,13), Color3.fromRGB(4,17,8),
+    Color3.fromRGB(9,34,15), Color3.fromRGB(15,55,23),
+    Color3.fromRGB(25,90,38), Color3.fromRGB(15,57,23)
+)
+Themes["LAVENDER"] = BuildTheme(
+    Color3.fromRGB(155,125,230), Color3.fromRGB(215,195,255),
+    Color3.fromRGB(75,55,135), Color3.fromRGB(185,115,235),
+    Color3.fromRGB(230,185,255), Color3.fromRGB(220,125,205),
+    Color3.fromRGB(12,8,21), Color3.fromRGB(22,14,36),
+    Color3.fromRGB(30,19,48), Color3.fromRGB(17,11,29),
+    Color3.fromRGB(34,23,53), Color3.fromRGB(51,35,76),
+    Color3.fromRGB(81,57,115), Color3.fromRGB(49,34,75)
+)
+Themes["MONOCHROME"] = BuildTheme(
+    Color3.fromRGB(155,160,170), Color3.fromRGB(225,228,235),
+    Color3.fromRGB(65,68,76), Color3.fromRGB(125,130,145),
+    Color3.fromRGB(205,210,220), Color3.fromRGB(175,180,190),
+    Color3.fromRGB(8,9,11), Color3.fromRGB(16,17,20),
+    Color3.fromRGB(24,25,29), Color3.fromRGB(13,14,17),
+    Color3.fromRGB(29,30,35), Color3.fromRGB(45,47,54),
+    Color3.fromRGB(72,75,84), Color3.fromRGB(45,47,54)
+)
+
 local UIStyles={"GLASSMORPHISM","NEON","MINIMAL","MODERN","PREMIUM"}
+local AnimationStyles={"SMOOTH","BOUNCE","ELASTIC","SLIDE","ZOOM","FADE","SNAPPY"}
 local CurrentTheme="PURPLE NEON"
 local CurrentStyle="PREMIUM"
 local ThemeDrawerOpen=false
 local StyleDrawerOpen=false
+local AnimationDrawerOpen=false
 
 local ThemeButton=MakeSettingButton("ThemeDrawerButton","SELECT THEME   ▼",392,29)
 local ThemeOptionsFrame=New("Frame",{
     Name="ThemeOptions",Position=UDim2.fromOffset(18,425),
     Size=UDim2.new(1,-36,0,0),BackgroundTransparency=1,
-    Visible=false,BorderSizePixel=0,ZIndex=10
+    Visible=false,ClipsDescendants=true,BorderSizePixel=0,ZIndex=10
 },SettingsPanel)
 
 local StyleButton=MakeSettingButton("StyleDrawerButton","SELECT UI STYLE   ▼",428,29)
 local StyleOptionsFrame=New("Frame",{
     Name="StyleOptions",Position=UDim2.fromOffset(18,461),
     Size=UDim2.new(1,-36,0,0),BackgroundTransparency=1,
-    Visible=false,BorderSizePixel=0,ZIndex=10
+    Visible=false,ClipsDescendants=true,BorderSizePixel=0,ZIndex=10
+},SettingsPanel)
+
+local AnimationButton=MakeSettingButton("AnimationDrawerButton","SELECT ANIMATION STYLE   ▼",464,29)
+local AnimationOptionsFrame=New("Frame",{
+    Name="AnimationOptions",Position=UDim2.fromOffset(18,497),
+    Size=UDim2.new(1,-36,0,0),BackgroundTransparency=1,
+    Visible=false,ClipsDescendants=true,BorderSizePixel=0,ZIndex=10
 },SettingsPanel)
 
 local ThemeOptionButtons={}
 local StyleOptionButtons={}
+local AnimationOptionButtons={}
 local ExtraSettingsTitle, ReflectionToggle, HoverToggle, BrightnessButton
+
+local DrawerTweenTokens = {
+    Theme = 0,
+    Style = 0,
+    Animation = 0
+}
+
+local function AnimateDrawer(frame, isOpen, itemButtons, itemCount, tokenName)
+    local token = (DrawerTweenTokens[tokenName] or 0) + 1
+    DrawerTweenTokens[tokenName] = token
+
+    local targetHeight = isOpen and (itemCount * 27) or 0
+    if isOpen then
+        frame.Visible = true
+        frame.Size = UDim2.new(1, -36, 0, 0)
+    end
+
+    for index, option in ipairs(itemButtons) do
+        local targetPosition = UDim2.fromOffset(0, (index - 1) * 27)
+        if isOpen then
+            option.Position = UDim2.fromOffset(0, (index - 1) * 27 - 10)
+            option.TextTransparency = 1
+            option.BackgroundTransparency = 1
+            Tween(option, {
+                Position = targetPosition,
+                TextTransparency = 0,
+                BackgroundTransparency = 0
+            }, 0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        else
+            Tween(option, {
+                Position = UDim2.fromOffset(0, (index - 1) * 27 - 7),
+                TextTransparency = 1,
+                BackgroundTransparency = 1
+            }, 0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        end
+    end
+
+    local drawerTween = Tween(frame, {
+        Size = UDim2.new(1, -36, 0, targetHeight)
+    }, isOpen and 0.38 or 0.22,
+        isOpen and Enum.EasingStyle.Quint or Enum.EasingStyle.Quad,
+        isOpen and Enum.EasingDirection.Out or Enum.EasingDirection.In)
+
+    if not isOpen then
+        task.spawn(function()
+            if drawerTween then drawerTween.Completed:Wait() end
+            if DrawerTweenTokens[tokenName] == token and frame.Parent then
+                frame.Visible = false
+                for index, option in ipairs(itemButtons) do
+                    if option.Parent then
+                        option.Position = UDim2.fromOffset(0, (index - 1) * 27)
+                        option.TextTransparency = 0
+                        option.BackgroundTransparency = 0
+                    end
+                end
+            end
+        end)
+    end
+end
 
 local function UpdateDrawerLayout()
     ThemeButton.Text="SELECT THEME   "..(ThemeDrawerOpen and "▲" or "▼")
-    ThemeOptionsFrame.Visible=ThemeDrawerOpen
     local themeY=ThemeButton.Position.Y.Offset+34
     ThemeOptionsFrame.Position=UDim2.fromOffset(18,themeY)
-    ThemeOptionsFrame.Size=UDim2.new(1,-36,0,ThemeDrawerOpen and (#ThemeNames*27) or 0)
+    AnimateDrawer(ThemeOptionsFrame, ThemeDrawerOpen, ThemeOptionButtons,
+        #ThemeNames, "Theme")
 
     local styleY=themeY+(ThemeDrawerOpen and (#ThemeNames*27+8) or 0)
-    StyleButton.Position=UDim2.fromOffset(18,styleY)
+    Tween(StyleButton,{Position=UDim2.fromOffset(18,styleY)},0.34,
+        Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
     StyleButton.Text="SELECT UI STYLE   "..(StyleDrawerOpen and "▲" or "▼")
-    StyleOptionsFrame.Visible=StyleDrawerOpen
-    StyleOptionsFrame.Position=UDim2.fromOffset(18,styleY+34)
-    StyleOptionsFrame.Size=UDim2.new(1,-36,0,StyleDrawerOpen and (#UIStyles*27) or 0)
+    local styleOptionsY=styleY+34
+    Tween(StyleOptionsFrame,{Position=UDim2.fromOffset(18,styleOptionsY)},0.34,
+        Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+    AnimateDrawer(StyleOptionsFrame, StyleDrawerOpen, StyleOptionButtons,
+        #UIStyles, "Style")
 
-    local extraY=styleY+34+(StyleDrawerOpen and #UIStyles*27 or 0)+14
+    local animationY=styleOptionsY+(StyleDrawerOpen and (#UIStyles*27+8) or 0)
+    Tween(AnimationButton,{Position=UDim2.fromOffset(18,animationY)},0.34,
+        Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+    AnimationButton.Text="SELECT ANIMATION STYLE   "..(AnimationDrawerOpen and "▲" or "▼")
+    local animationOptionsY=animationY+34
+    Tween(AnimationOptionsFrame,{Position=UDim2.fromOffset(18,animationOptionsY)},0.34,
+        Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+    AnimateDrawer(AnimationOptionsFrame, AnimationDrawerOpen,
+        AnimationOptionButtons, #AnimationStyles, "Animation")
+
+    local extraY=animationOptionsY+(AnimationDrawerOpen and (#AnimationStyles*27+8) or 0)+14
     if ExtraSettingsTitle then
-        ExtraSettingsTitle.Position=UDim2.fromOffset(19,extraY)
-        ReflectionToggle.Position=UDim2.fromOffset(18,extraY+18)
-        HoverToggle.Position=UDim2.fromOffset(18,extraY+50)
-        BrightnessButton.Position=UDim2.fromOffset(18,extraY+82)
+        Tween(ExtraSettingsTitle,{Position=UDim2.fromOffset(19,extraY)},0.36,
+            Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+        Tween(ReflectionToggle,{Position=UDim2.fromOffset(18,extraY+18)},0.36,
+            Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+        Tween(HoverToggle,{Position=UDim2.fromOffset(18,extraY+50)},0.36,
+            Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+        Tween(BrightnessButton,{Position=UDim2.fromOffset(18,extraY+82)},0.36,
+            Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
     end
     local canvasBottom=extraY+122
     SettingsPanel.CanvasSize=UDim2.fromOffset(0,math.max(470,canvasBottom))
@@ -1228,6 +1444,18 @@ local function RefreshThemeColors()
         if obj:IsA("GuiButton") then
             obj.BackgroundColor3 = Matte.Normal
             ApplyLiquidGlassButton(obj)
+        elseif obj:IsA("Frame") and obj.Name=="Card" then
+            obj.BackgroundColor3=C.Card
+        elseif obj:IsA("UIStroke") then
+            if obj.Name=="CardStroke" then obj.Color=C.Border end
+        elseif obj:IsA("UIGradient") then
+            if obj.Parent==Main then
+                obj.Color=ColorSequence.new(C.Background,C.Background2)
+            elseif obj.Parent==Header then
+                obj.Color=ColorSequence.new(C.Header,C.Header2)
+            elseif obj.Parent==Content or obj.Parent==SettingsPanel then
+                obj.Color=ColorSequence.new(C.Panel,C.Background2)
+            end
         end
     end
 
@@ -1253,6 +1481,36 @@ local function RefreshThemeColors()
         if accent then accent.Visible=active end
         button.TextColor3=active and Matte.Text or Matte.Secondary
     end
+    for _,button in ipairs(AnimationOptionButtons) do
+        local active=button.Name=="Animation_"..CurrentAnimationStyle
+        button.BackgroundColor3=Matte.Normal
+        local accent=button:FindFirstChild("MatteSelectedAccent")
+        if accent then accent.Visible=active end
+        button.TextColor3=active and Matte.Text or Matte.Secondary
+    end
+end
+
+local function ApplyAnimationStyle(styleName)
+    if not table.find(AnimationStyles,styleName) then return end
+    CurrentAnimationStyle=styleName
+    local durationMultipliers = {
+        SMOOTH=1.00, BOUNCE=1.10, ELASTIC=1.22,
+        SLIDE=0.92, ZOOM=0.88, FADE=0.78, SNAPPY=0.68
+    }
+    local multiplier=durationMultipliers[styleName] or 1
+    local speedFactor=100/(SettingsFeatures.AnimationSpeed or 100)
+    for key,baseValue in pairs(BaseAnimation) do
+        Animation[key]=baseValue*speedFactor*multiplier
+    end
+    for _,button in ipairs(AnimationOptionButtons) do
+        local active=button.Name=="Animation_"..styleName
+        button.BackgroundColor3=Matte.Normal
+        button.TextColor3=active and Matte.Text or Matte.Secondary
+        local accent=button:FindFirstChild("MatteSelectedAccent")
+        if accent then accent.Visible=active end
+    end
+    AnimationDrawerOpen=false
+    UpdateDrawerLayout()
 end
 
 local function ApplyTheme(themeName)
@@ -1356,6 +1614,31 @@ for i,name in ipairs(UIStyles) do
     option.MouseButton1Click:Connect(function() ApplyUIStyle(name) end)
 end
 
+for i,name in ipairs(AnimationStyles) do
+    local option=New("TextButton",{
+        Name="Animation_"..name,Position=UDim2.fromOffset(0,(i-1)*27),
+        Size=UDim2.new(1,0,0,24),BackgroundColor3=C.Card,
+        Text=name,TextColor3=C.White,TextSize=8,
+        Font=Enum.Font.GothamBold,AutoButtonColor=false,
+        BorderSizePixel=0,ZIndex=12
+    },AnimationOptionsFrame)
+    Round(option,9)
+    local selectedAccent=New("Frame",{
+        Name="MatteSelectedAccent",Size=UDim2.fromOffset(3,14),
+        Position=UDim2.fromOffset(5,5),BackgroundColor3=Matte.Accent,
+        BorderSizePixel=0,Visible=false,ZIndex=14
+    },option)
+    Round(selectedAccent,3)
+    table.insert(AnimationOptionButtons,option)
+    option.MouseButton1Click:Connect(function() ApplyAnimationStyle(name) end)
+end
+AnimationButton.MouseButton1Click:Connect(function()
+    AnimationDrawerOpen=not AnimationDrawerOpen
+    if AnimationDrawerOpen then ThemeDrawerOpen=false; StyleDrawerOpen=false end
+    UpdateDrawerLayout()
+end)
+
+
 -- THREE ADDITIONAL UI SETTINGS (visual-only; existing script actions stay unchanged)
 ExtraSettingsTitle=MakeSectionTitle("LIQUID GLASS CONTROLS",500)
 ReflectionToggle=MakeToggle(
@@ -1402,10 +1685,18 @@ end)
 
 ThemeButton.MouseButton1Click:Connect(function()
     ThemeDrawerOpen=not ThemeDrawerOpen
+    if ThemeDrawerOpen then
+        StyleDrawerOpen=false
+        AnimationDrawerOpen=false
+    end
     UpdateDrawerLayout()
 end)
 StyleButton.MouseButton1Click:Connect(function()
     StyleDrawerOpen=not StyleDrawerOpen
+    if StyleDrawerOpen then
+        ThemeDrawerOpen=false
+        AnimationDrawerOpen=false
+    end
     UpdateDrawerLayout()
 end)
 
@@ -1432,25 +1723,53 @@ ApplyUIStyle("PREMIUM")
 -- SETTINGS NAVIGATION
 --==============================================================
 local SettingsOpen=false
+local SettingsRotation = 0
+local SettingsRotationTween
+local SettingsPanelTween
+
 SettingsButton.MouseButton1Click:Connect(function()
     SettingsOpen=not SettingsOpen
+
+    if SettingsPanelTween then SettingsPanelTween:Cancel() end
+    if SettingsRotationTween then SettingsRotationTween:Cancel() end
+    -- Alternate direction on every press: clockwise into Settings, counter-
+    -- clockwise back to the original orientation when leaving Settings.
+    SettingsRotation = SettingsRotation + (SettingsOpen and 90 or -90)
+    SettingsRotationTween = Tween(SettingsButton,{Rotation=SettingsRotation},
+        0.42,Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+
     if SettingsOpen then
         SectionAccent.Visible=false
         SectionTitle.Visible=false
         SectionSubtitle.Visible=false
         Tabs.Visible=false
         Content.Visible=false
+
         SettingsPanel.Visible=true
+        SettingsPanel.Position=UDim2.fromOffset(14,153)
+        SettingsPanel.BackgroundTransparency=1
         SettingsPanel.CanvasPosition=Vector2.new(0,0)
-        Tween(SettingsButton,{Rotation=90},0.2,Enum.EasingStyle.Back)
+        Tween(SettingsPanel,{
+            Position=UDim2.fromOffset(14,139),
+            BackgroundTransparency=0
+        },0.38,Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
     else
-        SettingsPanel.Visible=false
-        SectionAccent.Visible=true
-        SectionTitle.Visible=true
-        SectionSubtitle.Visible=true
-        Tabs.Visible=true
-        Content.Visible=true
-        Tween(SettingsButton,{Rotation=0},0.2,Enum.EasingStyle.Back)
+        if SettingsPanelTween then SettingsPanelTween:Cancel() end
+        SettingsPanelTween=Tween(SettingsPanel,{
+            Position=UDim2.fromOffset(14,153),
+            BackgroundTransparency=1
+        },0.22,Enum.EasingStyle.Quart,Enum.EasingDirection.In)
+        if SettingsPanelTween then SettingsPanelTween.Completed:Wait() end
+        if not SettingsOpen and SettingsPanel.Parent then
+            SettingsPanel.Visible=false
+            SettingsPanel.Position=UDim2.fromOffset(14,139)
+            SettingsPanel.BackgroundTransparency=0
+            SectionAccent.Visible=true
+            SectionTitle.Visible=true
+            SectionSubtitle.Visible=true
+            Tabs.Visible=true
+            Content.Visible=true
+        end
     end
 end)
 
@@ -1716,66 +2035,141 @@ FloatingButton.MouseLeave:Connect(function()
 end)
 
 --==============================================================
--- MAIN OPENING ANIMATION + STATES
+-- MAIN OPEN / CLOSE ANIMATION + STATES
+-- Clean directional motion: rise into place on open, settle down on close.
+-- Keep one fixed resting position so repeated open/close cycles never drift.
 --==============================================================
-Main.BackgroundTransparency=1
-Outer.BackgroundTransparency=1
-MainScale.Scale=0.72
-Tween(Outer,{BackgroundTransparency=0},Animation.Open)
-Tween(Main,{BackgroundTransparency=0},Animation.Open)
-Tween(MainScale,{Scale=GetUIScale()},Animation.Open,Enum.EasingStyle.Back)
+local RestingOuterPosition = Outer.Position
 
-local IsAnimating=false
-local Closing=false
+local function GetOffsetPosition(position, yOffset)
+    return UDim2.new(
+        position.X.Scale, position.X.Offset,
+        position.Y.Scale, position.Y.Offset + yOffset
+    )
+end
+
+local function GetMotionProfile()
+    local profiles = {
+        SMOOTH = {Easing=Enum.EasingStyle.Quint, Offset=20, Scale=0.94},
+        BOUNCE = {Easing=Enum.EasingStyle.Back, Offset=28, Scale=0.90},
+        ELASTIC = {Easing=Enum.EasingStyle.Elastic, Offset=22, Scale=0.92},
+        SLIDE = {Easing=Enum.EasingStyle.Quart, Offset=42, Scale=1},
+        ZOOM = {Easing=Enum.EasingStyle.Quart, Offset=0, Scale=0.78},
+        FADE = {Easing=Enum.EasingStyle.Linear, Offset=0, Scale=1},
+        SNAPPY = {Easing=Enum.EasingStyle.Exponential, Offset=14, Scale=0.96}
+    }
+    return profiles[CurrentAnimationStyle] or profiles.SMOOTH
+end
+
+local function PrepareMainWindow()
+    local profile=GetMotionProfile()
+    Outer.Visible = true
+    Main.Visible = true
+    Outer.Position = GetOffsetPosition(RestingOuterPosition, profile.Offset)
+    Outer.BackgroundTransparency = 1
+    Main.BackgroundTransparency = 1
+    MainScale.Scale = GetUIScale() * profile.Scale
+end
+
+local function PlayMainWindowOpen(duration)
+    local profile=GetMotionProfile()
+    PrepareMainWindow()
+
+    Tween(Outer, {
+        Position = RestingOuterPosition,
+        BackgroundTransparency = 0
+    }, duration, profile.Easing, Enum.EasingDirection.Out)
+
+    Tween(Main, {
+        BackgroundTransparency = 0
+    }, duration * 0.82, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+    local scaleTween = Tween(MainScale, {
+        Scale = GetUIScale()
+    }, duration, profile.Easing, Enum.EasingDirection.Out)
+
+    return scaleTween
+end
+
+local function PlayMainWindowClose(duration, finalScale)
+    local profile=GetMotionProfile()
+    local moveTween = Tween(Outer, {
+        Position = GetOffsetPosition(RestingOuterPosition, profile.Offset * 0.75),
+        BackgroundTransparency = 1
+    }, duration, profile.Easing, Enum.EasingDirection.In)
+
+    Tween(Main, {
+        BackgroundTransparency = 1
+    }, duration * 0.78, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
+    Tween(MainScale, {
+        Scale = GetUIScale() * (finalScale or profile.Scale)
+    }, duration, profile.Easing, Enum.EasingDirection.In)
+
+    return moveTween
+end
+
+Main.BackgroundTransparency = 1
+Outer.BackgroundTransparency = 1
+MainScale.Scale = GetUIScale() * 0.94
+Outer.Position = GetOffsetPosition(RestingOuterPosition, 20)
+PlayMainWindowOpen(Animation.Open)
+
+local IsAnimating = false
+local Closing = false
 
 Minimize.MouseButton1Click:Connect(function()
     if IsAnimating or Closing then return end
-    IsAnimating=true
-    Tween(MainScale,{Scale=MainScale.Scale*0.72},Animation.Minimize,
-        Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-    local fade=Tween(Main,{BackgroundTransparency=1},Animation.Minimize)
-    Tween(Outer,{BackgroundTransparency=1},Animation.Minimize)
-    if fade then fade.Completed:Wait() end
+    IsAnimating = true
+
+    local closeTween = PlayMainWindowClose(Animation.Minimize, 0.90)
+    if closeTween then closeTween.Completed:Wait() end
+
     if not Screen.Parent then return end
-    Main.Visible=false
-    Outer.Visible=false
-    FloatingButton.Visible=true
-    FloatingScale.Scale=0.55
-    Tween(FloatingScale,{Scale=1},Animation.Restore,Enum.EasingStyle.Back)
-    IsAnimating=false
+    Main.Visible = false
+    Outer.Visible = false
+    Outer.Position = RestingOuterPosition
+
+    FloatingButton.Visible = true
+    FloatingScale.Scale = 0.72
+    Tween(FloatingScale, {Scale = 1}, Animation.Restore,
+        Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+    IsAnimating = false
 end)
 
 FloatingButton.MouseButton1Click:Connect(function()
     if IsAnimating or Closing then return end
-    IsAnimating=true
-    Tween(FloatingScale,{Scale=0.55},0.12)
-    task.wait(0.12)
+    IsAnimating = true
+
+    local floatingTween = Tween(FloatingScale, {Scale = 0.72}, 0.14,
+        Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+    if floatingTween then floatingTween.Completed:Wait() end
     if not Screen.Parent then return end
-    FloatingButton.Visible=false
-    Outer.Visible=true
-    Main.Visible=true
-    Main.BackgroundTransparency=1
-    Outer.BackgroundTransparency=1
-    MainScale.Scale=0.72
-    Tween(Outer,{BackgroundTransparency=0},Animation.Restore)
-    Tween(Main,{BackgroundTransparency=0},Animation.Restore)
-    local restore=Tween(MainScale,{Scale=GetUIScale()},Animation.Restore,Enum.EasingStyle.Back)
+
+    FloatingButton.Visible = false
+    local restore = PlayMainWindowOpen(Animation.Restore)
     if restore then restore.Completed:Wait() end
-    IsAnimating=false
+    IsAnimating = false
 end)
 
 Close.MouseButton1Click:Connect(function()
     if Closing or IsAnimating then return end
-    Closing=true
-    IsAnimating=true
-    Tween(MainScale,{Scale=0.78},Animation.Close,
-        Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-    local fade=Tween(Main,{BackgroundTransparency=1},Animation.Close)
-    Tween(Outer,{BackgroundTransparency=1},Animation.Close)
-    if fade then fade.Completed:Wait() end
-    if CreatedBlur and BlurEffect and BlurEffect.Parent then BlurEffect:Destroy()
-    elseif BlurEffect and BlurEffect.Parent then BlurEffect.Size=0 end
-    if Screen and Screen.Parent then Screen:Destroy() end
+    Closing = true
+    IsAnimating = true
+
+    local closeTween = PlayMainWindowClose(Animation.Close, 0.94)
+    if closeTween then closeTween.Completed:Wait() end
+
+    if CreatedBlur and BlurEffect and BlurEffect.Parent then
+        BlurEffect:Destroy()
+    elseif BlurEffect and BlurEffect.Parent then
+        BlurEffect.Size = 0
+    end
+
+    if Screen and Screen.Parent then
+        Screen:Destroy()
+    end
 end)
 
 --==============================================================
