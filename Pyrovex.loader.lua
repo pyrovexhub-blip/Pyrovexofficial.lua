@@ -1,9 +1,3 @@
---==============================================================
--- PYROVEX LOADER V18 | SETTINGS EXPANSION
--- Original script collections, loading UI, tabs, cards, copy/execute,
--- minimize/restore, dragging and responsive UI size are retained.
---==============================================================
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -161,6 +155,11 @@ local Scripts = {
         Name = "ADMIN BADGE", Icon = "🛡️",
         Subtitle = "ADMIN BADGE AND SPEED CHANGER",
         URL = "https://raw.githubusercontent.com/pyrovexhub-blip/Pyrovex.lua.sae/main/steal.an.egg.lua"
+    },
+    {
+        Name = "CLOUTHUB", Icon = "☁️",
+        Subtitle = "CLOUTHUB FEATURED SCRIPT",
+        URL = "https://raw.githubusercontent.com/ClouthubOnTop/Loader/main/main.lua"
     }
 }
 
@@ -541,77 +540,194 @@ New("TextLabel",{
     Font=Enum.Font.GothamBlack,ZIndex=7
 },Header)
 
-local function ButtonAnimation(button,normalColor,hoverColor)
-    local originalSize=button.Size
-    button.MouseEnter:Connect(function()
-        Tween(button,{BackgroundColor3=hoverColor},Animation.Hover)
-    end)
-    button.MouseLeave:Connect(function()
-        Tween(button,{BackgroundColor3=normalColor,Size=originalSize},Animation.Hover)
-    end)
-    button.MouseButton1Down:Connect(function()
-        Tween(button,{Size=UDim2.new(originalSize.X.Scale,originalSize.X.Offset-2,
-            originalSize.Y.Scale,originalSize.Y.Offset-2)},Animation.Button)
-    end)
-    button.MouseButton1Up:Connect(function()
-        Tween(button,{Size=originalSize},Animation.Button,Enum.EasingStyle.Back)
-    end)
+local Matte = {
+    -- Brighter theme-matched liquid glass. The base stays colored by the
+    -- active theme, but is lifted enough to keep button labels/icons readable.
+    Normal = C.Card:Lerp(C.Blue, 0.58):Lerp(C.LightBlue, 0.52):Lerp(C.Purple, 0.12),
+    Hover = C.CardHover:Lerp(C.Blue, 0.54):Lerp(C.LightBlue, 0.58):Lerp(C.LightPurple, 0.16),
+    Pressed = C.Card:Lerp(C.Blue, 0.62):Lerp(C.LightBlue, 0.44):Lerp(C.Purple, 0.16),
+    Border = C.LightBlue,
+    Accent = C.LightBlue,
+    Text = C.White,
+    Secondary = C.Gray
+}
+
+local GlassReflectionEnabled = true
+local GlassHoverEnabled = true
+local GlassBrightnessLevel = 4
+local GlassBrightnessSteps = {0.48, 0.58, 0.68, 0.76, 0.84}
+
+local LiquidGlassStyled = setmetatable({}, {__mode = "k"})
+local function GlassColors(base)
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, base:Lerp(C.White, 0.72)),
+        ColorSequenceKeypoint.new(0.16, base:Lerp(C.LightBlue, 0.66)),
+        ColorSequenceKeypoint.new(0.48, base:Lerp(C.Blue, 0.16)),
+        ColorSequenceKeypoint.new(0.78, base:Lerp(C.LightPurple, 0.30)),
+        ColorSequenceKeypoint.new(1, base:Lerp(C.Purple, 0.22))
+    })
 end
+
+local function ApplyLiquidGlassButton(button)
+    if not button or not button:IsA("GuiButton") then return end
+    -- FloatingButton is a self-contained circular logo image. Never place
+    -- glass gradients/highlights over it or recolor its image background.
+    if button.Name == "FloatingButton" then return end
+    button.AutoButtonColor = false
+    button.BorderSizePixel = 0
+    button.BackgroundColor3 = Matte.Normal
+
+    local corner = button:FindFirstChildOfClass("UICorner")
+    if not corner then
+        corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 9)
+        corner.Parent = button
+    end
+
+    local gradient = button:FindFirstChild("PyrovexLiquidGlassGradient")
+    if not gradient then
+        gradient = Instance.new("UIGradient")
+        gradient.Name = "PyrovexLiquidGlassGradient"
+        gradient.Parent = button
+    end
+    gradient.Rotation = 90
+    gradient.Color = GlassColors(Matte.Normal)
+    gradient.Transparency = GlassReflectionEnabled and NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.02),
+        NumberSequenceKeypoint.new(0.42, 0.07),
+        NumberSequenceKeypoint.new(1, 0.025)
+    }) or NumberSequence.new(0.12)
+    -- Keep image/text content crisp and above the glass surface.
+    for _, child in ipairs(button:GetChildren()) do
+        if child:IsA("GuiObject") and child ~= gradient then
+            child.ZIndex = math.max(child.ZIndex, button.ZIndex + 1)
+        end
+    end
+
+    -- Keep the liquid-glass finish borderless: no outline, edge stroke,
+    -- or thin line highlight. The soft gradient itself provides the sheen.
+    for _, child in ipairs(button:GetChildren()) do
+        if child:IsA("UIStroke") then
+            child:Destroy()
+        elseif child.Name == "PyrovexGlassHighlight" then
+            child:Destroy()
+        end
+    end
+
+    if not LiquidGlassStyled[button] then
+        LiquidGlassStyled[button] = true
+        button.MouseEnter:Connect(function()
+            if button.Parent then
+                if GlassHoverEnabled then
+                    button.BackgroundColor3 = Matte.Hover
+                    gradient.Color = GlassColors(Matte.Hover)
+                end
+            end
+        end)
+        button.MouseLeave:Connect(function()
+            if button.Parent then
+                button.BackgroundColor3 = Matte.Normal
+                gradient.Color = GlassColors(Matte.Normal)
+            end
+        end)
+        button.MouseButton1Down:Connect(function()
+            if button.Parent then
+                button.BackgroundColor3 = Matte.Pressed
+                gradient.Color = GlassColors(Matte.Pressed)
+            end
+        end)
+        button.MouseButton1Up:Connect(function()
+            if button.Parent then
+                if GlassHoverEnabled then
+                    button.BackgroundColor3 = Matte.Hover
+                    gradient.Color = GlassColors(Matte.Hover)
+                end
+            end
+        end)
+    end
+end
+
+local function ButtonAnimation(button, normalColor, hoverColor)
+    ApplyLiquidGlassButton(button)
+end
+
+local function ApplyBoldText(object)
+    if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+        object.Font = Enum.Font.GothamBold
+        if object:IsA("TextButton") and object.Name~="FloatingButton" then
+            object.TextStrokeTransparency = 0.88
+            object.TextStrokeColor3 = Color3.fromRGB(8, 12, 25)
+        end
+    end
+    if object:IsA("GuiButton") then
+        ApplyLiquidGlassButton(object)
+    end
+end
+
+local function StyleExistingTree(root)
+    for _, object in ipairs(root:GetDescendants()) do
+        ApplyBoldText(object)
+    end
+end
+
+-- Apply the same themed liquid-glass finish to buttons created later.
+Screen.DescendantAdded:Connect(function(object)
+    task.defer(function()
+        if object and object.Parent then ApplyBoldText(object) end
+    end)
+end)
+StyleExistingTree(Screen)
 
 local SettingsButton=New("TextButton",{
     Name="SettingsButton",Size=UDim2.fromOffset(30,30),
-    Position=UDim2.new(1,-82,0,101),BackgroundColor3=C.Card,
+    Position=UDim2.new(1,-82,0,101),BackgroundColor3=Matte.Normal,
     Text="⚙",TextSize=19,TextColor3=C.White,Font=Enum.Font.GothamBold,
     AutoButtonColor=false,BorderSizePixel=0,ZIndex=10
 },Main)
 Round(SettingsButton,9)
-local SettingsButtonStroke=Outline(SettingsButton,C.Border,1,0.15)
-ButtonAnimation(SettingsButton,C.Card,Color3.fromRGB(63,83,130))
+ButtonAnimation(SettingsButton,Matte.Normal,Matte.Hover)
 
 local DiscordButton=New("ImageButton",{
     Name="DiscordButton",Size=UDim2.fromOffset(30,30),
-    Position=UDim2.new(1,-46,0,101),BackgroundColor3=Color3.fromRGB(48,105,230),
+    Position=UDim2.new(1,-46,0,101),BackgroundColor3=Matte.Normal,
     Image=DiscordAsset,ScaleType=Enum.ScaleType.Crop,AutoButtonColor=false,
     BorderSizePixel=0,ZIndex=10
 },Main)
 Round(DiscordButton,9)
-Outline(DiscordButton,C.LightBlue,1,0.15)
 DiscordButton.MouseEnter:Connect(function()
-    Tween(DiscordButton,{BackgroundColor3=Color3.fromRGB(75,130,255)},0.15)
+    Tween(DiscordButton,{BackgroundColor3=Matte.Hover},0.15)
 end)
 DiscordButton.MouseLeave:Connect(function()
-    Tween(DiscordButton,{BackgroundColor3=Color3.fromRGB(48,105,230)},0.15)
+    Tween(DiscordButton,{BackgroundColor3=Matte.Normal},0.15)
 end)
 DiscordButton.MouseButton1Click:Connect(function()
     local ok,err=pcall(function()
         if not setclipboard then error("Clipboard is unsupported") end
         setclipboard(DiscordLink)
     end)
-    DiscordButton.BackgroundColor3=ok and C.Green or C.Red
+    DiscordButton.BackgroundColor3=Matte.Normal
     if not ok then warn("[PYROVEX] DISCORD COPY ERROR: "..tostring(err)) end
     task.delay(1,function()
-        if DiscordButton.Parent then DiscordButton.BackgroundColor3=Color3.fromRGB(48,105,230) end
+        if DiscordButton.Parent then DiscordButton.BackgroundColor3=Matte.Normal end
     end)
 end)
 
 local Minimize=New("TextButton",{
     Name="Minimize",Size=UDim2.fromOffset(30,30),Position=UDim2.new(1,-68,0,26),
-    BackgroundColor3=C.Card,Text="—",TextColor3=C.White,TextSize=18,
+    BackgroundColor3=Matte.Normal,Text="—",TextColor3=C.White,TextSize=18,
     Font=Enum.Font.GothamBlack,AutoButtonColor=false,BorderSizePixel=0,ZIndex=10
 },Header)
 Round(Minimize,9)
-Outline(Minimize,C.Border,1)
-ButtonAnimation(Minimize,C.Card,Color3.fromRGB(63,83,130))
+ButtonAnimation(Minimize,Matte.Normal,Matte.Hover)
 
 local Close=New("TextButton",{
     Name="Close",Size=UDim2.fromOffset(30,30),Position=UDim2.new(1,-34,0,26),
-    BackgroundColor3=Color3.fromRGB(65,28,43),Text="×",TextColor3=C.Red,
+    BackgroundColor3=Matte.Normal,Text="×",TextColor3=Matte.Text,
     TextSize=20,Font=Enum.Font.GothamBlack,AutoButtonColor=false,
     BorderSizePixel=0,ZIndex=10
 },Header)
 Round(Close,9)
-Outline(Close,C.Red,1,0.3)
-ButtonAnimation(Close,Color3.fromRGB(65,28,43),C.Red)
+ButtonAnimation(Close,Matte.Normal,Matte.Hover)
 
 local SectionAccent=New("Frame",{
     Size=UDim2.fromOffset(3,11),Position=UDim2.fromOffset(12,108),
@@ -845,19 +961,18 @@ local function MakeSettingButton(name,text,y,height)
     local button=New("TextButton",{
         Name=name,Position=UDim2.fromOffset(18,y),
         Size=UDim2.new(1,-36,0,height or 29),
-        BackgroundColor3=C.Card,Text=text,TextColor3=C.White,
+        BackgroundColor3=Matte.Normal,Text=text,TextColor3=Matte.Text,
         TextSize=8,TextXAlignment=Enum.TextXAlignment.Left,
         Font=Enum.Font.GothamBold,AutoButtonColor=false,
         BorderSizePixel=0,ZIndex=11
     },SettingsPanel)
     Round(button,8)
-    Outline(button,C.Border,1,0.25)
     New("UIPadding",{PaddingLeft=UDim.new(0,11),PaddingRight=UDim.new(0,8)},button)
     button.MouseEnter:Connect(function()
-        Tween(button,{BackgroundColor3=C.CardHover},0.12)
+        Tween(button,{BackgroundColor3=Matte.Hover},0.12)
     end)
     button.MouseLeave:Connect(function()
-        Tween(button,{BackgroundColor3=C.Card},0.12)
+        Tween(button,{BackgroundColor3=Matte.Normal},0.12)
     end)
     return button
 end
@@ -876,7 +991,7 @@ local function MakeToggle(name,label,y,initial,callback)
     local indicator=New("Frame",{
         Name="ToggleIndicator",Size=UDim2.fromOffset(32,16),
         Position=UDim2.new(1,-44,0.5,-8),
-        BackgroundColor3=initial and C.Green or C.DarkGray,
+        BackgroundColor3=initial and Matte.Accent or Matte.Pressed,
         BorderSizePixel=0,ZIndex=12
     },button)
     Round(indicator,20)
@@ -889,7 +1004,7 @@ local function MakeToggle(name,label,y,initial,callback)
     local enabled=initial
     local function Refresh()
         button.Text=label
-        Tween(indicator,{BackgroundColor3=enabled and C.Green or C.DarkGray},0.15)
+        Tween(indicator,{BackgroundColor3=enabled and Matte.Accent or Matte.Pressed},0.15)
         Tween(knob,{
             Position=enabled and UDim2.new(1,-14,0.5,-6) or UDim2.fromOffset(2,2)
         },0.15,Enum.EasingStyle.Back)
@@ -956,7 +1071,6 @@ local NeonToggle,SetNeon=MakeToggle(
         TopAccent.Visible=enabled
         SettingsAccent.Visible=enabled
         OuterStroke.Enabled=enabled or SettingsFeatures.Glow
-        SettingsButtonStroke.Enabled=enabled
     end
 )
 
@@ -1048,6 +1162,7 @@ local StyleOptionsFrame=New("Frame",{
 
 local ThemeOptionButtons={}
 local StyleOptionButtons={}
+local ExtraSettingsTitle, ReflectionToggle, HoverToggle, BrightnessButton
 
 local function UpdateDrawerLayout()
     ThemeButton.Text="SELECT THEME   "..(ThemeDrawerOpen and "▲" or "▼")
@@ -1063,11 +1178,26 @@ local function UpdateDrawerLayout()
     StyleOptionsFrame.Position=UDim2.fromOffset(18,styleY+34)
     StyleOptionsFrame.Size=UDim2.new(1,-36,0,StyleDrawerOpen and (#UIStyles*27) or 0)
 
-    local canvasBottom=styleY+34+(StyleDrawerOpen and #UIStyles*27 or 0)+18
+    local extraY=styleY+34+(StyleDrawerOpen and #UIStyles*27 or 0)+14
+    if ExtraSettingsTitle then
+        ExtraSettingsTitle.Position=UDim2.fromOffset(19,extraY)
+        ReflectionToggle.Position=UDim2.fromOffset(18,extraY+18)
+        HoverToggle.Position=UDim2.fromOffset(18,extraY+50)
+        BrightnessButton.Position=UDim2.fromOffset(18,extraY+82)
+    end
+    local canvasBottom=extraY+122
     SettingsPanel.CanvasSize=UDim2.fromOffset(0,math.max(470,canvasBottom))
 end
 
 local function RefreshThemeColors()
+    local lift = GlassBrightnessSteps[GlassBrightnessLevel] or 0.68
+    Matte.Normal = C.Card:Lerp(C.Blue, lift):Lerp(C.LightBlue, lift * 0.78):Lerp(C.Purple, 0.12)
+    Matte.Hover = C.CardHover:Lerp(C.Blue, math.min(lift + 0.06, 0.90)):Lerp(C.LightBlue, math.min(lift + 0.12, 0.94))
+    Matte.Pressed = C.Card:Lerp(C.Blue, math.min(lift + 0.04, 0.90)):Lerp(C.LightBlue, lift * 0.62):Lerp(C.Purple, 0.16)
+    Matte.Border = C.LightBlue
+    Matte.Accent = C.LightBlue
+    Matte.Text = C.White
+    Matte.Secondary = C.Gray
     Main.BackgroundColor3=C.Background
     Header.BackgroundColor3=C.Header
     Content.BackgroundColor3=C.Panel
@@ -1077,7 +1207,6 @@ local function RefreshThemeColors()
     HeaderStroke.Color=C.Border
     ContentStroke.Color=C.Border
     SettingsPanelStroke.Color=C.Border
-    SettingsButtonStroke.Color=C.Border
     SettingsAccent.BackgroundColor3=C.Blue
     TopAccent.BackgroundColor3=C.Blue
     SectionAccent.BackgroundColor3=C.Blue
@@ -1095,23 +1224,34 @@ local function RefreshThemeColors()
     end
     UpdateUISizeSlider(UISizePercent,false)
 
+    for _,obj in ipairs(Screen:GetDescendants()) do
+        if obj:IsA("GuiButton") then
+            obj.BackgroundColor3 = Matte.Normal
+            ApplyLiquidGlassButton(obj)
+        end
+    end
+
     for _,obj in ipairs(SettingsPanel:GetDescendants()) do
         if obj:IsA("TextButton") then
-            obj.BackgroundColor3=C.Card
+            obj.BackgroundColor3=Matte.Normal
             for _,child in ipairs(obj:GetChildren()) do
-                if child:IsA("UIStroke") then child.Color=C.Border end
+                if child:IsA("UIStroke") then child:Destroy() end
             end
         end
     end
     for _,button in ipairs(ThemeOptionButtons) do
-        if button.Name=="Theme_"..CurrentTheme then
-            button.BackgroundColor3=C.Blue
-        end
+        local active=button.Name=="Theme_"..CurrentTheme
+        button.BackgroundColor3=Matte.Normal
+        local accent=button:FindFirstChild("MatteSelectedAccent")
+        if accent then accent.Visible=active end
+        button.TextColor3=active and Matte.Text or Matte.Secondary
     end
     for _,button in ipairs(StyleOptionButtons) do
-        if button.Name=="Style_"..CurrentStyle then
-            button.BackgroundColor3=C.Blue
-        end
+        local active=button.Name=="Style_"..CurrentStyle
+        button.BackgroundColor3=Matte.Normal
+        local accent=button:FindFirstChild("MatteSelectedAccent")
+        if accent then accent.Visible=active end
+        button.TextColor3=active and Matte.Text or Matte.Secondary
     end
 end
 
@@ -1176,7 +1316,11 @@ local function ApplyUIStyle(styleName)
         SettingsAccent.Visible=SettingsFeatures.Neon
     end
     for _,button in ipairs(StyleOptionButtons) do
-        button.BackgroundColor3=(button.Name=="Style_"..styleName) and C.Blue or C.Card
+        local active=button.Name=="Style_"..styleName
+        button.BackgroundColor3=Matte.Normal
+        button.TextColor3=active and Matte.Text or Matte.Secondary
+        local accent=button:FindFirstChild("MatteSelectedAccent")
+        if accent then accent.Visible=active end
     end
     StyleDrawerOpen=false
     UpdateDrawerLayout()
@@ -1190,8 +1334,9 @@ for i,name in ipairs(ThemeNames) do
         Font=Enum.Font.GothamBold,AutoButtonColor=false,
         BorderSizePixel=0,ZIndex=12
     },ThemeOptionsFrame)
-    Round(option,7)
-    Outline(option,C.Border,1,0.3)
+    Round(option,9)
+    local selectedAccent=New("Frame",{Name="MatteSelectedAccent",Size=UDim2.fromOffset(3,14),Position=UDim2.fromOffset(5,5),BackgroundColor3=Matte.Accent,BorderSizePixel=0,Visible=false,ZIndex=14},option)
+    Round(selectedAccent,3)
     table.insert(ThemeOptionButtons,option)
     option.MouseButton1Click:Connect(function() ApplyTheme(name) end)
 end
@@ -1204,11 +1349,56 @@ for i,name in ipairs(UIStyles) do
         Font=Enum.Font.GothamBold,AutoButtonColor=false,
         BorderSizePixel=0,ZIndex=12
     },StyleOptionsFrame)
-    Round(option,7)
-    Outline(option,C.Border,1,0.3)
+    Round(option,9)
+    local selectedAccent=New("Frame",{Name="MatteSelectedAccent",Size=UDim2.fromOffset(3,14),Position=UDim2.fromOffset(5,5),BackgroundColor3=Matte.Accent,BorderSizePixel=0,Visible=false,ZIndex=14},option)
+    Round(selectedAccent,3)
     table.insert(StyleOptionButtons,option)
     option.MouseButton1Click:Connect(function() ApplyUIStyle(name) end)
 end
+
+-- THREE ADDITIONAL UI SETTINGS (visual-only; existing script actions stay unchanged)
+ExtraSettingsTitle=MakeSectionTitle("LIQUID GLASS CONTROLS",500)
+ReflectionToggle=MakeToggle(
+    "GlassReflectionToggle","LIQUID GLASS REFLECTION",518,true,function(enabled)
+        GlassReflectionEnabled=enabled
+        for _,obj in ipairs(Screen:GetDescendants()) do
+            if obj:IsA("GuiButton") and obj.Name~="FloatingButton" then
+                local gradient=obj:FindFirstChild("PyrovexLiquidGlassGradient")
+                if gradient then
+                    gradient.Transparency=enabled and NumberSequence.new({
+                        NumberSequenceKeypoint.new(0,0.02),
+                        NumberSequenceKeypoint.new(0.42,0.07),
+                        NumberSequenceKeypoint.new(1,0.025)
+                    }) or NumberSequence.new(0.12)
+                end
+            end
+        end
+    end
+)
+HoverToggle=MakeToggle(
+    "GlassHoverToggle","SOFT HOVER RESPONSE",550,true,function(enabled)
+        GlassHoverEnabled=enabled
+    end
+)
+BrightnessButton=MakeSettingButton("GlassBrightnessButton","BUTTON BRIGHTNESS: LEVEL 4",582,28)
+local function ApplyGlassBrightness()
+    local lift=GlassBrightnessSteps[GlassBrightnessLevel]
+    Matte.Normal=C.Card:Lerp(C.Blue,lift):Lerp(C.LightBlue,lift*0.78):Lerp(C.Purple,0.12)
+    Matte.Hover=C.CardHover:Lerp(C.Blue,math.min(lift+0.06,0.90)):Lerp(C.LightBlue,math.min(lift+0.12,0.94))
+    Matte.Pressed=C.Card:Lerp(C.Blue,math.min(lift+0.04,0.90)):Lerp(C.LightBlue,lift*0.62):Lerp(C.Purple,0.16)
+    BrightnessButton.Text="BUTTON BRIGHTNESS: LEVEL "..GlassBrightnessLevel
+    for _,obj in ipairs(Screen:GetDescendants()) do
+        if obj:IsA("GuiButton") and obj.Name~="FloatingButton" then
+            obj.BackgroundColor3=Matte.Normal
+            local gradient=obj:FindFirstChild("PyrovexLiquidGlassGradient")
+            if gradient then gradient.Color=GlassColors(Matte.Normal) end
+        end
+    end
+end
+BrightnessButton.MouseButton1Click:Connect(function()
+    GlassBrightnessLevel=GlassBrightnessLevel%#GlassBrightnessSteps+1
+    ApplyGlassBrightness()
+end)
 
 ThemeButton.MouseButton1Click:Connect(function()
     ThemeDrawerOpen=not ThemeDrawerOpen
@@ -1285,9 +1475,14 @@ local function CreateScriptCard(scriptInfo,index)
     Round(CardAccent,5)
     AnimateGradient(PremiumGradient(CardAccent,90),3.5)
 
-    local ScriptLogo=scriptInfo.Name=="CHILI HUB"
-        and "rbxthumb://type=Asset&id=103785364011347&w=420&h=420"
-        or "rbxthumb://type=Asset&id=111679469652157&w=420&h=420"
+    local ScriptLogo
+    if scriptInfo.Name=="CHILI HUB" then
+        ScriptLogo="rbxthumb://type=Asset&id=103785364011347&w=420&h=420"
+    elseif scriptInfo.Name=="CLOUTHUB" then
+        ScriptLogo="rbxthumb://type=Asset&id=129249733345141&w=420&h=420"
+    else
+        ScriptLogo="rbxthumb://type=Asset&id=111679469652157&w=420&h=420"
+    end
     local Icon=New("ImageLabel",{
         Name="ScriptLogo",Size=UDim2.fromOffset(47,47),
         Position=UDim2.fromOffset(13,20),BackgroundTransparency=1,
@@ -1327,7 +1522,7 @@ local function CreateScriptCard(scriptInfo,index)
         BadgeX=BadgeX+width+5
         return badge
     end
-    if scriptInfo.Name=="CHILI HUB" then
+    if scriptInfo.Name=="CHILI HUB" or scriptInfo.Name=="CLOUTHUB" then
         CreateBadge("FEATURED",C.Purple,50)
     elseif HasHubBadges then
         CreateBadge("FEATURED",C.Purple,50)
@@ -1339,33 +1534,30 @@ local function CreateScriptCard(scriptInfo,index)
 
     local Execute=New("TextButton",{
         Name="ExecuteButton",Size=UDim2.fromOffset(72,30),
-        Position=UDim2.new(1,-158,0,29),BackgroundColor3=C.Blue,
+        Position=UDim2.new(1,-158,0,29),BackgroundColor3=Matte.Normal,
         Text="EXECUTE",TextColor3=C.White,TextSize=8,
         Font=Enum.Font.GothamBlack,AutoButtonColor=false,
         BorderSizePixel=0,ZIndex=9
     },Card)
     Round(Execute,9)
-    Outline(Execute,C.LightBlue,1,0.15)
-    AnimateGradient(Gradient(Execute,C.Blue,C.Purple,0),4)
-    ButtonAnimation(Execute,C.Blue,Color3.fromRGB(95,120,255))
+    ButtonAnimation(Execute,Matte.Normal,Matte.Hover)
 
     local Copy=New("TextButton",{
         Name="CopyButton",Size=UDim2.fromOffset(68,30),
-        Position=UDim2.new(1,-80,0,29),BackgroundColor3=C.CopyBackground,
+        Position=UDim2.new(1,-80,0,29),BackgroundColor3=Matte.Normal,
         Text="COPY",TextColor3=C.White,TextSize=8,
         Font=Enum.Font.GothamBlack,AutoButtonColor=false,
         BorderSizePixel=0,ZIndex=9
     },Card)
     Round(Copy,9)
-    Outline(Copy,C.LightPurple,1,0.25)
-    ButtonAnimation(Copy,C.CopyBackground,Color3.fromRGB(78,85,145))
+    ButtonAnimation(Copy,Matte.Normal,Matte.Hover)
 
     local Executing=false
     Execute.MouseButton1Click:Connect(function()
         if Executing then return end
         Executing=true
         Execute.Text="LOADING..."
-        Tween(Execute,{BackgroundColor3=C.Purple},0.2)
+        Tween(Execute,{BackgroundColor3=Matte.Normal},0.2)
         task.spawn(function()
             local success,err=pcall(function()
                 local source=game:HttpGet(scriptInfo.URL)
@@ -1385,7 +1577,7 @@ local function CreateScriptCard(scriptInfo,index)
             if Execute and Execute.Parent then
                 Execute.Text="EXECUTE"
                 Execute.TextColor3=C.White
-                Tween(Execute,{BackgroundColor3=C.Blue},0.2)
+                Tween(Execute,{BackgroundColor3=Matte.Normal},0.2)
             end
             Executing=false
         end)
@@ -1439,7 +1631,6 @@ end
 local SelectedTab=nil
 local TabButtons={}
 local TabIndicators={}
-local TabStrokes={}
 
 local function GetSelectedScripts(name)
     if name=="ALL SCRIPTS" then return AllScripts
@@ -1455,20 +1646,13 @@ local function SelectTab(name)
     for tabName,tab in pairs(TabButtons) do
         local active=tabName==name
         Tween(tab,{
-            BackgroundColor3=active and C.Blue or C.Card,
-            TextColor3=active and C.White or C.Gray
+            BackgroundColor3=Matte.Normal,
+            TextColor3=active and Matte.Text or Matte.Secondary
         },Animation.Tab)
-        local stroke=TabStrokes[tabName]
-        if stroke then
-            Tween(stroke,{
-                Color=active and C.LightBlue or C.Border,
-                Transparency=active and 0.08 or 0
-            },Animation.Tab)
-        end
         local indicator=TabIndicators[tabName]
         if indicator then
             Tween(indicator,{
-                Size=UDim2.new(active and 0.65 or 0,0,0,2),
+                Size=UDim2.new(0,3,active and 0.58 or 0,0),
                 BackgroundTransparency=active and 0 or 1
             },Animation.Tab)
         end
@@ -1486,30 +1670,28 @@ end
 for index,section in ipairs(Sections) do
     local Tab=New("TextButton",{
         Name=section.Name,Size=UDim2.fromOffset(section.Width,34),
-        BackgroundColor3=C.Card,Text=section.Name,TextColor3=C.Gray,
+        BackgroundColor3=Matte.Normal,Text=section.Name,TextColor3=Matte.Secondary,
         TextSize=8,Font=Enum.Font.GothamBlack,AutoButtonColor=false,
         BorderSizePixel=0,LayoutOrder=index,ClipsDescendants=true,ZIndex=7
     },Tabs)
     Round(Tab,10)
-    local TabStroke=Outline(Tab,C.Border,1)
     local Indicator=New("Frame",{
-        Name="Indicator",Size=UDim2.new(0,0,0,2),
-        Position=UDim2.new(0.175,0,1,-4),BackgroundColor3=C.White,
+        Name="Indicator",Size=UDim2.new(0,0,0,0),
+        Position=UDim2.new(0,5,0.21,0),BackgroundColor3=Matte.Accent,
         BackgroundTransparency=1,BorderSizePixel=0,ZIndex=9
     },Tab)
     Round(Indicator,5)
     TabButtons[section.Name]=Tab
     TabIndicators[section.Name]=Indicator
-    TabStrokes[section.Name]=TabStroke
     Tab.MouseButton1Click:Connect(function() SelectTab(section.Name) end)
     Tab.MouseEnter:Connect(function()
         if SelectedTab~=section.Name then
-            Tween(Tab,{BackgroundColor3=Color3.fromRGB(38,51,79)},Animation.Hover)
+            Tween(Tab,{BackgroundColor3=Matte.Hover},Animation.Hover)
         end
     end)
     Tab.MouseLeave:Connect(function()
         if SelectedTab~=section.Name then
-            Tween(Tab,{BackgroundColor3=C.Card},Animation.Hover)
+            Tween(Tab,{BackgroundColor3=Matte.Normal},Animation.Hover)
         end
     end)
 end
@@ -1524,16 +1706,8 @@ local FloatingButton=New("ImageButton",{
     AutoButtonColor=false,BorderSizePixel=0,Visible=false,Active=true,ZIndex=100
 },Screen)
 Round(FloatingButton,100)
-local FloatingStroke=Outline(FloatingButton,C.LightBlue,2,0.05)
-AnimateGradient(PremiumGradient(FloatingStroke,0),2)
+local FloatingStroke=Outline(FloatingButton,Matte.Border,1,0.08)
 local FloatingScale=New("UIScale",{Scale=0.7},FloatingButton)
-local FloatingGlow=New("Frame",{
-    Size=UDim2.new(1,10,1,10),Position=UDim2.fromOffset(-5,-5),
-    BackgroundTransparency=1,ZIndex=99
-},FloatingButton)
-Round(FloatingGlow,100)
-local FloatingGlowStroke=Outline(FloatingGlow,C.Purple,2,0.65)
-Pulse(FloatingGlowStroke,"Transparency",0.35,0.8,1)
 FloatingButton.MouseEnter:Connect(function()
     Tween(FloatingScale,{Scale=1.12},0.18,Enum.EasingStyle.Back)
 end)
@@ -1667,6 +1841,167 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 --==============================================================
+-- DISCORD WELCOME POPUP (SEPARATE MINI LIQUID-GLASS UI)
+-- Appears together with the main menu after the loading screen.
+-- The Discord artwork is kept as its own image; no glass overlay is placed on it.
+--==============================================================
+local DiscordPopup = New("Frame", {
+    Name = "DiscordWelcomePopup",
+    Size = UDim2.fromOffset(338, 142),
+    Position = UDim2.new(0.5, 0, 0, 18),
+    AnchorPoint = Vector2.new(0.5, 0),
+    BackgroundColor3 = C.Blue,
+    BackgroundTransparency = 0.08,
+    BorderSizePixel = 0,
+    ClipsDescendants = false,
+    ZIndex = 100,
+    Visible = true
+}, Screen)
+Round(DiscordPopup, 18)
+local DiscordPopupGradient = Gradient(
+    DiscordPopup,
+    C.Blue:Lerp(C.LightBlue, 0.42),
+    C.Purple:Lerp(C.Background, 0.18),
+    25
+)
+DiscordPopupGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.08),
+    NumberSequenceKeypoint.new(0.55, 0.02),
+    NumberSequenceKeypoint.new(1, 0.10)
+})
+
+local DiscordPopupImage = New("ImageLabel", {
+    Name = "DiscordPopupImage",
+    Size = UDim2.fromOffset(54, 54),
+    Position = UDim2.fromOffset(14, 13),
+    BackgroundTransparency = 1,
+    Image = DiscordAsset,
+    ScaleType = Enum.ScaleType.Crop,
+    ZIndex = 102
+}, DiscordPopup)
+Round(DiscordPopupImage, 100)
+
+New("TextLabel", {
+    Name = "DiscordPopupTitle",
+    Size = UDim2.new(1, -88, 0, 22),
+    Position = UDim2.fromOffset(78, 13),
+    BackgroundTransparency = 1,
+    Text = "JOIN OUR DISCORD",
+    TextColor3 = C.White,
+    TextSize = 14,
+    Font = Enum.Font.GothamBlack,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 102
+}, DiscordPopup)
+
+New("TextLabel", {
+    Name = "DiscordPopupDescription",
+    Size = UDim2.new(1, -88, 0, 17),
+    Position = UDim2.fromOffset(78, 36),
+    BackgroundTransparency = 1,
+    Text = "Updates, support and community",
+    TextColor3 = C.White,
+    TextTransparency = 0.12,
+    TextSize = 10,
+    Font = Enum.Font.GothamMedium,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 102
+}, DiscordPopup)
+
+New("TextLabel", {
+    Name = "DiscordPopupInviteLink",
+    Size = UDim2.new(1, -88, 0, 17),
+    Position = UDim2.fromOffset(78, 54),
+    BackgroundTransparency = 1,
+    Text = DiscordLink,
+    TextColor3 = Color3.fromRGB(225, 235, 255),
+    TextSize = 9,
+    Font = Enum.Font.Gotham,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextTruncate = Enum.TextTruncate.AtEnd,
+    ZIndex = 102
+}, DiscordPopup)
+
+local DiscordCopyPopupButton = New("TextButton", {
+    Name = "DiscordCopyPopupButton",
+    Size = UDim2.new(0.5, -21, 0, 31),
+    Position = UDim2.fromOffset(14, 98),
+    BackgroundColor3 = Matte.Normal,
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Text = "COPY LINK",
+    TextColor3 = C.White,
+    TextSize = 10,
+    Font = Enum.Font.GothamBlack,
+    ZIndex = 103
+}, DiscordPopup)
+Round(DiscordCopyPopupButton, 10)
+ApplyLiquidGlassButton(DiscordCopyPopupButton)
+
+local DiscordLaterButton = New("TextButton", {
+    Name = "DiscordMaybeLaterButton",
+    Size = UDim2.new(0.5, -21, 0, 31),
+    Position = UDim2.new(0.5, 7, 0, 98),
+    BackgroundColor3 = Matte.Normal,
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Text = "MAYBE LATER",
+    TextColor3 = C.White,
+    TextSize = 10,
+    Font = Enum.Font.GothamBold,
+    ZIndex = 103
+}, DiscordPopup)
+Round(DiscordLaterButton, 10)
+ApplyLiquidGlassButton(DiscordLaterButton)
+
+DiscordCopyPopupButton.MouseButton1Click:Connect(function()
+    local copied = pcall(function()
+        if not setclipboard then error("Clipboard is unsupported") end
+        setclipboard(DiscordLink)
+    end)
+    if copied then
+        DiscordCopyPopupButton.Text = "COPIED!"
+        task.delay(1.25, function()
+            if DiscordCopyPopupButton and DiscordCopyPopupButton.Parent then
+                DiscordCopyPopupButton.Text = "COPY LINK"
+            end
+        end)
+    else
+        DiscordCopyPopupButton.Text = "COPY UNAVAILABLE"
+        task.delay(1.5, function()
+            if DiscordCopyPopupButton and DiscordCopyPopupButton.Parent then
+                DiscordCopyPopupButton.Text = "COPY LINK"
+            end
+        end)
+    end
+end)
+
+DiscordLaterButton.MouseButton1Click:Connect(function()
+    if not DiscordPopup or not DiscordPopup.Parent then return end
+    Tween(DiscordPopup, {
+        Position = DiscordPopup.Position - UDim2.fromOffset(0, 12),
+        BackgroundTransparency = 1
+    }, 0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    for _, obj in ipairs(DiscordPopup:GetDescendants()) do
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+            Tween(obj, {TextTransparency = 1}, 0.18)
+        elseif obj:IsA("ImageLabel") then
+            Tween(obj, {ImageTransparency = 1}, 0.18)
+        end
+    end
+    task.wait(0.24)
+    if DiscordPopup and DiscordPopup.Parent then DiscordPopup:Destroy() end
+end)
+
+-- Soft entrance; the circular Discord image remains completely untouched.
+DiscordPopup.Position = UDim2.new(0.5, 0, 0, 4)
+DiscordPopup.BackgroundTransparency = 1
+Tween(DiscordPopup, {
+    Position = UDim2.new(0.5, 0, 0, 18),
+    BackgroundTransparency = 0.08
+}, 0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+--==============================================================
 -- INITIALIZE
 --==============================================================
 SelectTab("ALL SCRIPTS")
@@ -1681,6 +2016,6 @@ print("BLUR AND NEON EFFECTS ENABLED")
 print("THEME AND UI STYLE DRAWERS ENABLED")
 print("INSTANT SETTINGS SWITCHING ENABLED")
 print("ALL SCRIPTS COLLECTION INITIALIZED")
-print("6 SCRIPTS AVAILABLE")
+print("7 SCRIPTS AVAILABLE")
 print("PYROVEX HUB SUCCESSFULLY LOADED")
 print("==================================================")
